@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage My WFH Applications</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <div id="app" class="container mt-5">
+    <h2 class="text-center mb-4">Manage My WFH Applications</h2>
+
+    <!-- Tabs for Approved, Pending, and Rejected Applications -->
+    <b-nav tabs class="mb-4">
+      <b-nav-item v-bind:active="activeTab === 'approved'" @click="setTab('approved')">Approved Applications</b-nav-item>
+      <b-nav-item v-bind:active="activeTab === 'pending'" @click="setTab('pending')">Pending Applications</b-nav-item>
+      <b-nav-item v-bind:active="activeTab === 'rejected'" @click="setTab('rejected')">Rejected Applications</b-nav-item>
+    </b-nav>
+
+    <!-- Applications Table for Each Tab -->
+    <b-card v-if="activeTab === 'approved'" class="mb-4">
+      <b-card-header>Approved Applications</b-card-header>
+      <b-card-body>
+        <b-table :items="approvedApplications" :fields="fields" responsive="sm"></b-table>
+      </b-card-body>
+    </b-card>
+
+    <b-card v-if="activeTab === 'pending'" class="mb-4">
+      <b-card-header>Pending Applications</b-card-header>
+      <b-card-body>
+        <b-table :items="pendingApplications" :fields="fields" responsive="sm"></b-table>
+      </b-card-body>
+    </b-card>
+
+    <b-card v-if="activeTab === 'rejected'" class="mb-4">
+      <b-card-header>Rejected Applications</b-card-header>
+      <b-card-body>
+        <b-table :items="rejectedApplications" :fields="fields" responsive="sm"></b-table>
+      </b-card-body>
+    </b-card>
+
+    <!-- Back to Home Page Button -->
+    <div class="text-center mt-4">
+      <b-button variant="primary" @click="goBack">Go Back to Home Page</b-button>
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        activeTab: 'approved', 
+
+        // PLACEHOLDER DATA FOR NOW till we get our database sorted.
+        approvedApplications: [
+          { id: 1, startDate: '2024-09-01', endDate: '2024-09-05', reason: 'I hate my life' },
+          { id: 2, startDate: '2024-09-10', endDate: '2024-09-15', reason: 'Office has wesley' }
+        ],
+        pendingApplications: [
+          { id: 3, startDate: '2024-09-20', endDate: '2024-09-25', reason: 'Pls Wesley is there' },
+          { id: 4, startDate: '2024-09-30', endDate: '2024-10-05', reason: 'I AM WESLEY' }
+        ],
+        rejectedApplications: [
+          { id: 5, startDate: '2024-08-15', endDate: '2024-08-20', reason: 'Wesley haunts me in my dreams' },
+          { id: 6, startDate: '2024-08-25', endDate: '2024-08-30', reason: 'Wesley will eat you muahaha' }
+        ],
+        fields: [
+          { key: 'id', label: 'ID' },
+          { key: 'startDate', label: 'Start Date' },
+          { key: 'endDate', label: 'End Date' },
+          { key: 'reason', label: 'Reason' }
+        ]
+      },
+      methods: {
+        setTab(tab) {
+          this.activeTab = tab;
+        },
+        goBack() {
+          window.location.href = "../Home/home.html"; // Adjust the URL as needed
+        }
+      }
+    });
+  </script>
+</body>
+</html>
