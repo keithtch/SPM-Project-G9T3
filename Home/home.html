@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,107 +8,159 @@
     <link rel="stylesheet" href="home.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-
 </head>
+
 <body>
+    <div id="app">
+        <div class="top-bar text-center">
+            Welcome, {{ userName }} to All-In-One WFHMS!
+        </div>
 
-<div id="app">
-    <div class="top-bar text-center">
-        Welcome, {{ userName }} to All-In-One WFHMS!
+        <div class="container">
+
+            <!-- Calendar Section -->
+            <div class="container">
+                <div class="calendar">
+                    <div class="calendar-header">
+                        <span class="month-picker" @click="showMonthList"> {{ monthNames[currentMonth] }} </span>
+                        <div class="year-picker">
+                            <span class="year-change" @click="previousYear"><pre style="margin-top:14px"><</pre></span>
+                            <span id="year">{{ currentYear }}</span>
+                            <span class="year-change" @click="nextYear"><pre style="margin-top:14px">></pre></span>
+                        </div>
+                    </div>
+
+                    <div class="calendar-body">
+                        <div class="calendar-week-days">
+                            <div v-for="day in weekDays" :key="day">{{ day }}</div>
+                        </div>
+                        <div class="calendar-days">
+                            <div v-for="day in daysOfMonth" :key="day" :class="{'current-date': isCurrentDate(day)}">
+                                {{ day > 0 ? day : '' }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-footer"></div>
+
+                    <div class="date-time-formate">
+                        <div class="day-text-formate">{{ currentDateFormatted }}</div>
+                        <div class="date-time-value">
+                            <div class="time-formate">{{ currentTime }}</div>
+                            <div class="date-formate">{{ fullDate }}</div>
+                        </div>
+                    </div>
+
+                    <div class="month-list" :class="{'show': showMonths, 'hide': !showMonths, 'hideonce': !initialLoadComplete}">
+                        <div v-for="(month, index) in monthNames" :key="month" @click="selectMonth(index)">
+                            <div>{{ month }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row text-center mt-4">
+                <div class="col-md-6">
+                    <button class="btn btn-primary w-100 action-btn" @click="applyWFH">
+                        <i class="fas fa-calendar-plus"></i> Apply for WFH
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button class="btn btn-secondary w-100 action-btn" @click="manageRequests">
+                        <i class="fas fa-tasks"></i> Manage WFH Applications
+                    </button>
+                </div>
+                <div class="col-md-12 mt-2">
+                    <button class="btn btn-danger w-10 action-btn" @click="logOut">Log Out</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <div class="container">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
 
-        <!-- Calendar Section [HOW SHOULD WE DO THIS?? How to visualise information on it - renyi] -->
-        <div class="contianer">
-            <div class="calendar">
-              <div class="calendar-header">
-                <span class="month-picker" id="month-picker"> MONTH </span>
-                <div class="year-picker" id="year-picker">
-                  <span class="year-change" id="pre-year">
-                    <pre style="margin-top:14px"><</pre>
-                  </span>
-                  <span id="year"> YEAR </span>
-                  <span class="year-change" id="next-year">
-                    <pre style="margin-top:14px">></pre>
-                  </span>
-                </div>
-              </div>
-        
-              <div class="calendar-body">
-                <div class="calendar-week-days">
-                  <div>Sun</div>
-                  <div>Mon</div>
-                  <div>Tue</div>
-                  <div>Wed</div>
-                  <div>Thu</div>
-                  <div>Fri</div>
-                  <div>Sat</div>
-                </div>
-                <div class="calendar-days">
-                </div>
-              </div>
-              <div class="calendar-footer">
-              </div>
-              <div class="date-time-formate">
-                <div class="day-text-formate">TODAY</div>
-                <div class="date-time-value">
-                  <div class="time-formate">Generating Time</div>
-                  <div class="date-formate">day - month - year</div>
-                </div>
-              </div>
-              <div class="month-list"></div>
-            </div>
-          </div>
-
-        <div class="row text-center mt-4">
-            <div class="col-md-6">
-                <button class="btn btn-primary w-100 action-btn" @click="applyWFH">
-                    <i class="fas fa-calendar-plus"></i> Apply for WFH
-                </button>
-            </div>
-            <div class="col-md-6">
-                <button class="btn btn-secondary w-100 action-btn" @click="manageRequests">
-                    <i class="fas fa-tasks"></i> Manage WFH Applications
-                </button>
-            </div>
-            <div class="col-md-12 mt-2">
-                <button class="btn btn-danger w-10 action-btn" @click="logOut">Log Out</button>
-            </div>
-        </div>   
-    </div>
-
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
-<script>
-    const { createApp } = Vue;
-    const app = createApp({
-        data() {
-            return {
-                userName: 'W3SLEY TAN' // Placeholder for user name
-            };
-        },
-        methods: {
-            applyWFH() {
-                alert('Redirecting to apply for Work From Home.'); // Used to check for errors next time
-                window.location.href = '../Application/application.html'
+        createApp({
+            data() {
+                return {
+                    userName: 'W3SLEY TAN',   // Can link to db in the future
+                    currentMonth: new Date().getMonth(),
+                    currentYear: new Date().getFullYear(),
+                    monthNames: [
+                        'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'
+                    ],
+                    weekDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                    daysOfMonth: [],
+                    showMonths: false,
+                    fullDate: '',
+                    currentTime: '',
+                    currentDateFormatted: '',
+                    initialLoadComplete: false
+                };
             },
-            manageRequests() {
-                alert('Redirecting to manage applications.'); // Used to check for errors next time
-                window.location.href = '../ManageApplication/mapplication.html'
+            mounted() {
+                this.generateCalendar(this.currentMonth, this.currentYear);
+                this.updateDateTime();
+                setTimeout(() => {
+                    this.initialLoadComplete = true; 
+                }, 500); 
+                setInterval(this.updateDateTime, 1000);
             },
-            logOut(){
-                alert('Redirecting to Login Page.'); // Used to check for errors next time
-                window.location.href = '../Login&Authentication/login.html'
+            methods: {
+                applyWFH() {
+                    alert('Redirecting to apply for Work From Home.');
+                    window.location.href = '../Application/application.html';
+                },
+                manageRequests() {
+                    alert('Redirecting to manage applications.');
+                    window.location.href = '../ManageApplication/mapplication.html';
+                },
+                logOut() {
+                    alert('Redirecting to Login Page.');
+                    window.location.href = '../Login&Authentication/login.html';
+                },
+                generateCalendar(month, year) {
+                    const daysInMonth = [31, this.isLeapYear(year) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    const firstDay = new Date(year, month, 1).getDay();
+                    const totalDays = daysInMonth[month];
+
+                    this.daysOfMonth = Array(firstDay).fill(0).concat([...Array(totalDays).keys()].map(day => day + 1));
+                },
+                isLeapYear(year) {
+                    return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+                },
+                isCurrentDate(day) {
+                    const today = new Date();
+                    return day === today.getDate() && this.currentMonth === today.getMonth() && this.currentYear === today.getFullYear();
+                },
+                previousYear() {
+                    this.currentYear--;
+                    this.generateCalendar(this.currentMonth, this.currentYear);
+                },
+                nextYear() {
+                    this.currentYear++;
+                    this.generateCalendar(this.currentMonth, this.currentYear);
+                },
+                showMonthList() {
+                    this.showMonths = true;
+                },
+                selectMonth(index) {
+                    this.currentMonth = index;
+                    this.generateCalendar(this.currentMonth, this.currentYear);
+                    this.showMonths = false;
+                },
+                updateDateTime() {
+                    const now = new Date();
+                    this.fullDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                    this.currentTime = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    this.currentDateFormatted = now.toLocaleDateString('en-US', { weekday: 'long' });
+                }
             }
-        }
-    });
-
-    app.mount('#app');
-</script>
-<script src="home.js"></script>
-
+        }).mount('#app');
+    </script>
 </body>
+
 </html>
