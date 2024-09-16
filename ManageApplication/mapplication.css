@@ -1,0 +1,49 @@
+body {
+    background: linear-gradient(to right, #f8f9fc, #e9ecef);
+  }
+  .container {
+    max-width: 900px;
+  }
+  .card {
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    padding: 20px;
+  }
+  .card-header {
+    background: #007bff;
+    color: #ffffff;
+    border-bottom: 1px solid #0056b3;
+    border-radius: 12px 12px 0 0;
+  }
+  .btn-primary {
+    border-radius: 50px;
+    padding: 10px 20px;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  .btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+  }
+  .nav-item {
+    cursor: pointer;
+  }
+  .nav-item.active {
+    background: #007bff;
+    color: #ffffff;
+    border-radius: 8px;
+  }
+  .nav-tabs .nav-link {
+    border-radius: 8px;
+    transition: background-color 0.3s;
+  }
+  .nav-tabs .nav-link.active {
+    background: #007bff;
+    color: #ffffff;
+  }
+  .form-container {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
