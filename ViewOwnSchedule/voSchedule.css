@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+#calendar {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Detail box styling */
+#detailBox {
+  position: absolute;
+  display: none;
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  font-size: 14px;
+  z-index: 10001;
+  border-radius: 5px;
+  width: 200px;
+}
+
+#detailBox strong {
+  font-size: 16px;
+}
+
+#detailBox em {
+  color: #666;
+}
+
+/* Go back to home styling */
+.btn-primary {
+  border-radius: 50px;
+  padding: 10px 20px;
+  transition: background-color 0.3s, transform 0.3s;
+}
