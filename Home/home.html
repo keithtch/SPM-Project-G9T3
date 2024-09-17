@@ -50,7 +50,6 @@
                             <div class="date-formate">{{ fullDate }}</div>
                         </div>
                     </div>
-
                     <div class="month-list" :class="{'show': showMonths, 'hide': !showMonths, 'hideonce': !initialLoadComplete}">
                         <div v-for="(month, index) in monthNames" :key="month" @click="selectMonth(index)">
                             <div>{{ month }}</div>
@@ -103,11 +102,18 @@
             mounted() {
                 this.generateCalendar(this.currentMonth, this.currentYear);
                 this.updateDateTime();
+
+                // Set the month list as hidden until it's explicitly shown
+                this.showMonths = false;
+                this.initialLoadComplete = false;
+
                 setTimeout(() => {
-                    this.initialLoadComplete = true; 
+                    this.initialLoadComplete = true;
                 }, 500); 
+
                 setInterval(this.updateDateTime, 1000);
             },
+
             methods: {
                 applyWFH() {
                     alert('Redirecting to apply for Work From Home.');
@@ -144,7 +150,7 @@
                     this.generateCalendar(this.currentMonth, this.currentYear);
                 },
                 showMonthList() {
-                    this.showMonths = true;
+                    this.showMonths = !this.showMonths;
                 },
                 selectMonth(index) {
                     this.currentMonth = index;
