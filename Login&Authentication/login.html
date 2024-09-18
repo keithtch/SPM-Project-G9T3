@@ -23,6 +23,14 @@
     </div>
 
     <script>
+        fetch('http://localhost:5000/data')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            console.log(data.data[0])
+        })
+        .catch(error => console.error('Error fetching data:', error));
+
         new Vue({
             el: '#app',
             data: {
