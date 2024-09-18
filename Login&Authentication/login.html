@@ -23,11 +23,13 @@
     </div>
 
     <script>
+
         fetch('http://localhost:5000/data')
         .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            console.log(data.data[0])
+        .then(returnedJSON => {
+            console.log(returnedJSON);
+            console.log(returnedJSON.data[0]);
+            dataArr = returnedJSON.data;
         })
         .catch(error => console.error('Error fetching data:', error));
 
@@ -37,14 +39,29 @@
                 staffID: ''
             },
             methods: {
+                checkId(id,arr) {
+                    for (let i = 0; i < arr.length; i++) {
+                        if (id == arr[i][0]) {
+                            return 1
+                        }
+                    }
+                    return 0
+                },
                 login() {
-                    if (this.staffID) {
+                    if (this.checkId(this.staffID,dataArr)) {
                         window.location.href = '../Home/home.html';
                     } else {
                         alert('Please enter your StaffID');
                     }
                 }
-            }
+
+            },
+            computed: {
+
+            },
+
+            
+
         });
     </script>
     <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
