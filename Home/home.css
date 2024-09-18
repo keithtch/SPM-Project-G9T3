@@ -4,10 +4,11 @@ html, body {
   padding: 0;
 }
 
-body {
-  background: #0f3854;
-  background: radial-gradient(ellipse at center,  #0a2e38  0%, #000000 70%);
-  background-size: 100%;
+body {  
+  background-image: url('../Images/homebg.jpg'), radial-gradient(ellipse at center, #0a2e38 0%, #000000 70%);
+  background-size: cover, 100%;
+  background-position: center, center;
+  background-attachment: fixed;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -18,9 +19,12 @@ body {
   font-family: 'Share Tech Mono', monospace;
   color: #ffffff;
   text-align: center;
-  margin-top: 20px;   
+  margin-top: 20px;
   color: #daf6ff;
   text-shadow: 0 0 20px rgba(10, 175, 230, 1), 0 0 20px rgba(10, 175, 230, 0);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px; 
+  padding: 20px; 
 }
 
 .time {
