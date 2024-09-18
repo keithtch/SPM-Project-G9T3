@@ -1,323 +1,56 @@
-* {
-  padding: 0;
+html, body {
+  height: 100%;
   margin: 0;
-  font-family: consolas;
-  box-sizing: border-box;
+  padding: 0;
 }
 
 body {
-  background-image: url('../Images/homebg.jpg');
-  background-size: cover; 
-  background-position: center; 
-  background-repeat: no-repeat; 
-  background-attachment: fixed; 
-}
-
-.calendar {
-  justify-content: center;
-  height: 30rem;
-  width: max-content;
-  background-color: white;
-  border-radius: 25px;
-  overflow: hidden;
-  padding: 35px 50px 0px 50px;
-  margin: 0 auto; 
-}
-
-.calendar {
-  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
-}
-
-.calendar-header {
-  background: #17a387; 
+  background: #0f3854;
+  background: radial-gradient(ellipse at center,  #0a2e38  0%, #000000 70%);
+  background-size: 100%;
   display: flex;
-  justify-content: space-between;
-  border-radius: 7px;
+  flex-direction: column;
+  justify-content: flex-start;
   align-items: center;
-  font-weight: 700;
+}
+
+#clock {
+  font-family: 'Share Tech Mono', monospace;
   color: #ffffff;
-  padding: 10px;
-}
-
-.calendar-body {
-  padding: 10px;
-}
-
-.calendar-week-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  font-weight: 600;
-  cursor: pointer;
-  color: rgb(104, 104, 104);
-}
-
-.calendar-week-days div:hover {
-  color: black;
-  transform: scale(1.2);
-  transition: all .2s ease-in-out;
-}
-
-.calendar-week-days div {
-  display: grid;
-  place-items: center;
-  color: #16a085; 
-  height: 50px;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-  color: #0A0921;
-}
-
-.calendar-days div {
-  width: 37px;
-  height: 33px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  position: relative;
-  cursor: pointer;
-  animation: to-top 1s forwards;
-}
-
-.month-picker {
-  padding: 5px 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.year-picker {
-  display: flex;
-  align-items: center;
-}
-
-.year-change {
-  height: 30px;
-  width: 30px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  margin: 0px 10px;
-  cursor: pointer;
-}
-
-.year-change:hover {
-  background-color: #1abc9c; 
-  transition: all .2s ease-in-out;
-  transform: scale(1.12);
-}
-
-.calendar-footer {
-  padding: 10px;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-#year:hover {
-  cursor: pointer;
-  transform: scale(1.2);
-  transition: all 0.2 ease-in-out;
-}
-
-.calendar-days div span {
-  position: absolute;
-}
-
-.calendar-days div:hover {
-  transition: width 0.2s ease-in-out, height 0.2s ease-in-out;
-  background-color: #1abc9c; 
-  border-radius: 20%;
-  color: #ffffff;
-}
-
-.calendar-days div.current-date {
-  color: #ffffff;
-  background-color: #16a085; 
-  border-radius: 20%;
-}
-
-.month-list {
-  position: relative;
-  left: 0;
-  top: -130px;
-  background-color: #ebebeb;
-  color: #151426;
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 5px;
-  border-radius: 20px;
-  visibility: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.6s, visibility 0.6s;
-}
-
-.month-list>div {
-  display: grid;
-  place-content: center;
-  margin: 5px 10px;
-  transition: all 0.2s ease-in-out;
-}
-
-.month-list>div>div {
-  border-radius: 15px;
-  padding: 10px;
-  cursor: pointer;
-}
-
-.month-list>div>div:hover {
-  background-color: #16a085; 
-  color: #ffffff;
-  transform: scale(0.9);
-  transition: all 0.2s ease-in-out;
-}
-
-.month-list.show {
-  visibility: visible;
-  opacity: 1;
-  pointer-events: all;
-  animation: to-left 0.7s forwards;
-}
-
-
-.month-list.hide {
-  opacity: 0;
-  pointer-events: none;
-  animation: to-right 0.7s forwards;
-}
-
-.month-list.hideonce {
-  display: none; 
-}
-
-.date-time-formate {
-  height: 0.1rem;
-  width: 100%;
-  font-family: Dubai Light, Century Gothic;
-  position: relative;
-  display: flex;
-  top: 50px;
-  justify-content: center;
-  align-items: center;
-}
-
-.day-text-formate {
-  font-family: Microsoft JhengHei UI;
-  font-size: 1.4rem;
-  padding-right: 5%;
-  border-right: 3px solid #16a085; 
-}
-
-.date-time-value {
-  display: block;
-  position: relative;
   text-align: center;
-  padding-left: 5%;
+  margin-top: 20px;   
+  color: #daf6ff;
+  text-shadow: 0 0 20px rgba(10, 175, 230, 1), 0 0 20px rgba(10, 175, 230, 0);
 }
 
-.time-formate {
-  font-size: 1.5rem;
+.time {
+  letter-spacing: 0.05em;
+  font-size: 80px;
+  padding: 5px 0;
 }
 
-.time-formate.hideTime {
-  animation: hidetime 1.5s forwards;
+.date {
+  letter-spacing: 0.1em;
+  font-size: 24px;
 }
 
-.day-text-formate.hidetime {
-  animation: hidetime 1.5s forwards;
-}
-
-.date-formate.hideTime {
-  animation: hidetime 1.5s forwards;
-}
-
-.day-text-formate.showtime {
-  animation: showtime 1s forwards;
-}
-
-.time-formate.showtime {
-  animation: showtime 1s forwards;
-}
-
-.date-formate.showtime {
-  animation: showtime 1s forwards;
-}
-
-@keyframes to-top {
-  0% {
-    transform: translateY(0);
-    opacity: 0;
-  }
-
-  100% {
-    transform: translateY(100%);
-    opacity: 1;
-  }
-}
-
-@keyframes to-left {
-  0% {
-    transform: translatex(230%);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translatex(0);
-    opacity: 1;
-  }
-}
-
-@keyframes to-right {
-  10% {
-    transform: translatex(0);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translatex(-150%);
-    opacity: 1;
-  }
-}
-
-@keyframes showtime {
-  0% {
-    transform: translatex(250%);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translatex(0%);
-    opacity: 1;
-  }
-}
-
-@keyframes hidetime {
-  0% {
-    transform: translatex(0%);
-    opacity: 1;
-  }
-
-  100% {
-    transform: translatex(-370%);
-    opacity: 1;
-  }
-}
-
-.top-bar {
-    background-color: #343a40;
-    color: white;
-    padding: 10px;
-    font-size: 1.2rem;
-}
-
-.action-btn {
-    margin-top: 20px;
+.text {
+  letter-spacing: 0.1em;
+  font-size: 24px;
+  padding: 20px 0 0;
 }
 
 .container {
-  margin-top: 40px;
+  margin-top: 30px; 
+}
+
+#topbar {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
