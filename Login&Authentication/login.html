@@ -24,7 +24,7 @@
 
     <script>
 
-        fetch('http://localhost:5000/data')
+        fetch('http://localhost:5000/employee')
         .then(response => response.json())
         .then(returnedJSON => {
             console.log(returnedJSON);
@@ -49,6 +49,8 @@
                 },
                 login() {
                     if (this.checkId(this.staffID,dataArr)) {
+                        //Save StaffID to localStorage
+                        localStorage.setItem('staffID', this.staffID);
                         window.location.href = '../Home/home.html';
                     } else {
                         alert('Please enter your StaffID');

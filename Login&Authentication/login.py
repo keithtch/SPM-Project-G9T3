@@ -12,7 +12,7 @@ def get_db_connection():
         database='projectdb'
     )
 
-@app.route('/data')
+@app.route('/employee')
 def get_data():
     connection = get_db_connection()
     try:

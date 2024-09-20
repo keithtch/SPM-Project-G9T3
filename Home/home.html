@@ -64,14 +64,28 @@
       createApp({
         data() {
           return {
-            userName: "W3SLEY TAN",
+            userName: "",
             time: '',
-            date: ''
+            date: '',
+            staffID: ''
           };
         },
         mounted() {
           this.updateTime();
           setInterval(this.updateTime, 1000);
+          this.staffID = localStorage.getItem('staffID');
+          fetch('http://localhost:5000/employee')
+          .then(response => response.json())
+          .then(returnedJSON => {
+            console.log(returnedJSON);
+            dataArr = returnedJSON.data;
+            staffInd = this.findId(this.staffID,dataArr)
+            this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
+            report = dataArr[staffInd][7]
+            // team = this.findTeam(report,dataArr)
+            // console.log(team)
+          })
+          .catch(error => console.error('Error fetching data:', error));
         },
         methods: {
           applyWFH() {
@@ -98,7 +112,27 @@
           },
           zeroPadding(num, digit) {
             return String(num).padStart(digit, '0');
-          }
+          },
+          findId(id,arr) {
+                    for (let i = 0; i < arr.length; i++) {
+                        if (id == arr[i][0]) {
+                            return i
+                        }
+                    }
+                    return 0
+                },
+          findTeam(id,arr) {
+              team_arr=[]
+              for (let i = 0; i < arr.length; i++) {
+                  if (id == arr[i][7]) {
+                      team_arr.push(arr[i][0])
+                  }
+              }
+              return team_arr
+          },
+    
+    
+          
         }
       }).mount("#app");
     </script>
