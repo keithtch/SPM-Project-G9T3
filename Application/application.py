@@ -23,16 +23,26 @@ def apply():
     finally:
         connection.close()
         
-@app.route('/getDates',methods=['POST'])
-def getDates():
+@app.route('/updateDates',methods=['POST'])
+def updateDates():
     data = request.get_json()
     dates = data.get('dates')
-    
-    if dates:
-        print(dates)
-        return jsonify({"status": "success", "received_dates": dates}), 200
-    else:
-        return jsonify({"status": "error", "message": "No dates received"}), 400
+    print(dates)
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            for entry in dates:
+                cursor.execute("""INSERT INTO Application (Staff_ID, Date_Applied, Reporting_Manager, Status_Of_Application)
+    VALUES (%s,%s,%s,%s)""",(entry[0],entry[1],entry[2],entry[3]))
+            connection.commit()
+            if dates:
+                print(dates)
+                return jsonify({"status": "success", "received_dates": dates}), 200
+            else:
+                return jsonify({"status": "error", "message": "No dates received"}), 400
+    finally:
+        connection.close()
+
     
 
 if __name__ == '__main__':

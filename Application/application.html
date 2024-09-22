@@ -160,7 +160,7 @@
               const end = new Date(this.endDate)
 
               while (currentDate <= end){
-                  this.dateArray.push(currentDate.toISOString().split('T')[0]);
+                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],'130002','Pending']);
                 currentDate.setDate(currentDate.getDate()+1);
               }
             }
@@ -169,7 +169,7 @@
           this.getDates()
         },
         getDates(){
-          axios.post('http://localhost:5001/getDates', {dates: this.dateArray})
+          axios.post('http://localhost:5001/updateDates', {dates: this.dateArray})
           .then(response => {
             console.log('Success')
           })
