@@ -27,8 +27,8 @@
         fetch('http://localhost:5000/employee')
         .then(response => response.json())
         .then(returnedJSON => {
-            console.log(returnedJSON);
-            console.log(returnedJSON.data[0]);
+            //console.log(returnedJSON);
+            //console.log(returnedJSON.data[0]);
             dataArr = returnedJSON.data;
         })
         .catch(error => console.error('Error fetching data:', error));

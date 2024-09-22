@@ -78,6 +78,7 @@
           .then(response => response.json())
           .then(returnedJSON => {
             console.log(returnedJSON);
+            //console.log(this.staffID);
             dataArr = returnedJSON.data;
             staffInd = this.findId(this.staffID,dataArr)
             this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
