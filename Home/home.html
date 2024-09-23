@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WFHMS</title>
-    <link rel="stylesheet" href="home.css" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -14,6 +13,7 @@
       rel="stylesheet"
     />
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="home.css" />
   </head>
 
   <body>
@@ -31,26 +31,32 @@
       <div class="container">
         <div class="row text-center mt-4">
           <div class="col-md-6 mb-4">
-            <button class="btn btn-primary w-100 action-btn" @click="applyWFH">
+            <button class="btn btn-success w-100 action-btn apply-btn" @click="applyWFH">
               <i class="fas fa-calendar-plus"></i> Apply for WFH
             </button>
           </div>
           <div class="col-md-6 mb-4">
-            <button class="btn btn-secondary w-100 action-btn" @click="manageRequests">
+            <button class="btn btn-warning w-100 action-btn manage-btn" @click="manageRequests">
               <i class="fas fa-tasks"></i> Manage WFH Applications
             </button>
           </div>
           <div class="col-md-6 mb-4">
-            <button class="btn btn-info w-100 action-btn" @click="viewOwnSchedule">
+            <button class="btn btn-info w-100 action-btn schedule-btn" @click="viewOwnSchedule">
               <i class="fas fa-calendar"></i> View Own Schedule
             </button>
           </div>
+          <div class="col-md-6 mb-4">
+            <button class="btn btn-info w-100 action-btn team-schedule-btn" @click="viewTeamSchedule">
+              <i class="fas fa-users"></i> View Team Schedule
+            </button>
+          </div>
           <div class="col-md-12 mt-2">
-            <button class="btn btn-danger w-10 action-btn" @click="logOut">
+            <button class="btn btn-danger w-100 action-btn logout-btn" @click="logOut">
               Log Out
             </button>
           </div>
         </div>
+        
       </div>
     </div>
 
@@ -100,6 +106,10 @@
           viewOwnSchedule() {
             alert("Redirecting to view own schedule.");
             window.location.href = "../ViewOwnSchedule/voSchedule.html";
+          },
+          viewTeamSchedule() {
+            alert("Redirecting to view team schedule.");
+            window.location.href = "../ViewTeamSchedule/vtSchedule.html";
           },
           logOut() {
             alert("Redirecting to Login Page.");

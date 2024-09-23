@@ -58,3 +58,44 @@ body {
     top: 0;
     left: 0;
 }
+
+.action-btn {
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.action-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.apply-btn {
+  background-color: #047717; 
+  color: white;
+}
+
+.manage-btn {
+  background-color: #a89700; 
+  color: white;
+}
+
+.schedule-btn {
+  background-color: #0f8799; 
+  color: white;
+}
+
+.team-schedule-btn {
+  background-color: #0f8799; 
+  color: white;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .action-btn {
+    font-size: 18px; 
+    padding: 15px; 
+  }
+}
