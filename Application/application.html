@@ -125,7 +125,7 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
   <script>
-      fetch('http://localhost:5001/application')
+    fetch('http://localhost:5001/application')
       .then(response => response.json())
       .then(data => {
         console.log(data.data);
@@ -188,13 +188,50 @@
         },
         submitApplication() {
           alert('Application Submitted!');
-          // HERE NEXT TIME USED TO UPDATE DATABASE @ziming
-         
+          
           // Handle application submission logic
           console.log("Application Type:", this.applicationType);
           console.log("WFH Reason:", this.wfhReason);
           console.log("Selected Days (Recurring):", this.dayOptions);
           console.log("Selected Dates (Fixed):", this.dateOptions);
+
+          if (this.applicationType == 'recurring') {
+            this.dateArray = [];
+            if (this.recurringStartDate && this.recurringEndDate) {
+              let currentDate = new Date(this.recurringStartDate);
+              const end = new Date(this.recurringEndDate);
+
+              while (currentDate <= end) {
+                if (this.recurringDays.includes(currentDate.getDay())) {
+                  this.dateArray.push(currentDate.toISOString().split('T')[0]);
+                }
+                currentDate.setDate(currentDate.getDate() + 1);
+              }
+            }
+            console.log(this.dateArray);
+          } else if (this.applicationType == 'fixed') {
+            this.dateArray = [];
+            if (this.startDate && this.endDate) {
+              let currentDate = new Date(this.startDate);
+              const end = new Date(this.endDate);
+
+              while (currentDate <= end) {
+                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0], '130002', 'Pending']);
+                currentDate.setDate(currentDate.getDate() + 1);
+              }
+            }
+            console.log(this.dateArray);
+          }
+          this.getDates();
+        },
+        getDates() {
+          axios.post('http://localhost:5001/updateDates', { dates: this.dateArray })
+            .then(response => {
+              console.log('Success');
+            })
+            .catch(error => {
+              console.error('Error', error);
+            });
         },
         goBack() {
           window.location.href = "../Home/home.html"; 
