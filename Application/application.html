@@ -8,8 +8,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css" rel="stylesheet"/>
   <link href="application.css" rel="stylesheet">
-  
-
 </head>
 <body>
   <div id="app" class="container mt-5">
@@ -40,6 +38,11 @@
         <b-form-group label="Select Days for Recurring Application" class="form-group">
           <b-form-checkbox-group v-model="recurringDays" :options="daysOfWeek"></b-form-checkbox-group>
         </b-form-group>
+
+        <div v-for="day in recurringDays" :key="day" class="mb-3">
+          <label>{{ getDayName(day) }}</label>
+          <b-form-select v-model="dayOptions[day]" :options="timeOptions"></b-form-select>
+        </div>
 
         <b-form-group label="Select Recurring Date Range" class="form-group">
           <div class="row">
@@ -85,7 +88,27 @@
             </div>
           </div>
         </b-form-group>
+
+        <div v-if="dateArray.length > 0">
+          <div v-for="date in dateArray" :key="date" class="mb-3">
+            <label>{{ date }}</label>
+            <b-form-select v-model="dateOptions[date]" :options="timeOptions"></b-form-select>
+          </div>
+        </div>
       </div>
+
+      <!-- WFH Reason -->
+      <b-form-group label="Reason for WFH" label-for="reason" class="form-group">
+        <b-form-textarea
+          id="reason"
+          v-model="wfhReason"
+          placeholder="Enter the reason for your WFH application (max 1000 characters)"
+          :maxlength="1000"
+          rows="3"
+          required
+        ></b-form-textarea>
+        <small>{{ 1000 - wfhReason.length }} characters remaining</small>
+      </b-form-group>
 
       <div class="text-center mb-4">
         <b-button variant="success" class="btn-custom" @click="submitApplication">Submit Application</b-button>
@@ -102,14 +125,12 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
   <script>
-
       fetch('http://localhost:5001/application')
-      .then(response=>response.json())
-      .then(data=> {
+      .then(response => response.json())
+      .then(data => {
         console.log(data.data);
       })
       .catch(error => console.error('Error fetching data:', error));
-
 
     new Vue({
       el: "#app",
@@ -118,6 +139,14 @@
         applicationType: "recurring", // default type is recurring
         recurringDays: [], // days selected for recurring
         dateArray: [],
+        wfhReason: '', // Added wfh reason data
+        timeOptions: [
+          { value: 'AM', text: 'AM' },
+          { value: 'PM', text: 'PM' },
+          { value: 'Full Day', text: 'Full Day' }
+        ],
+        dayOptions: {}, // to hold selected time for each day
+        dateOptions: {}, // to hold selected time for each date
         daysOfWeek: [
           { text: "Monday", value: 1 },
           { text: "Tuesday", value: 2 },
@@ -132,50 +161,40 @@
         minDate: new Date().toISOString().split("T")[0] // current date as minimum
       },
       
+      watch: {
+        startDate() {
+          this.updateDateArray();
+        },
+        endDate() {
+          this.updateDateArray();
+        }
+      },
+
       methods: {
-        
+        getDayName(dayValue) {
+          return this.daysOfWeek.find(day => day.value === dayValue).text;
+        },
+        updateDateArray() {
+          this.dateArray = [];
+          if (this.startDate && this.endDate) {
+            let currentDate = new Date(this.startDate);
+            const end = new Date(this.endDate);
+
+            while (currentDate <= end) {
+              this.dateArray.push(currentDate.toISOString().split('T')[0]);
+              currentDate.setDate(currentDate.getDate() + 1);
+            }
+          }
+        },
         submitApplication() {
           alert('Application Submitted!');
           // HERE NEXT TIME USED TO UPDATE DATABASE @ziming
          
-          if (this.applicationType=='recurring'){
-            this.dateArray=[];
-            if (this.recurringStartDate && this.recurringEndDate){
-              let currentDate = new Date(this.recurringStartDate);
-              const end = new Date(this.recurringEndDate)
-
-              while (currentDate <= end){
-                if(this.recurringDays.includes(currentDate.getDay())){
-                  this.dateArray.push(currentDate.toISOString().split('T')[0]);
-                }
-                currentDate.setDate(currentDate.getDate()+1);
-              }
-            }
-            console.log(this.dateArray);
-          }
-          else if (this.applicationType=='fixed'){
-            this.dateArray=[];
-            if (this.startDate && this.endDate){
-              let currentDate = new Date(this.startDate);
-              const end = new Date(this.endDate)
-
-              while (currentDate <= end){
-                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],'130002','Pending']);
-                currentDate.setDate(currentDate.getDate()+1);
-              }
-            }
-            console.log(this.dateArray);
-          }
-          this.getDates()
-        },
-        getDates(){
-          axios.post('http://localhost:5001/updateDates', {dates: this.dateArray})
-          .then(response => {
-            console.log('Success')
-          })
-          .catch(error=>{
-            console.error('Error',error)
-          })
+          // Handle application submission logic
+          console.log("Application Type:", this.applicationType);
+          console.log("WFH Reason:", this.wfhReason);
+          console.log("Selected Days (Recurring):", this.dayOptions);
+          console.log("Selected Dates (Fixed):", this.dateOptions);
         },
         goBack() {
           window.location.href = "../Home/home.html"; 
