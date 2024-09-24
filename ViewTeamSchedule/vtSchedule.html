@@ -8,7 +8,7 @@
       href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="vtSchedule.css" />
   </head>
   <body class="bg-light">
     <div id="app" class="container mt-5">
@@ -44,18 +44,115 @@
       </div>
 
       <div class="card">
-        <div class="card-body">
-          <h5 class="card-title">Team Information</h5>
+        <div class="card-body" v-if="teamData">
+          <h5 class="card-title text-center">Team Information</h5>
           <p><strong>Team Name:</strong> {{ selectedTeam }}</p>
           <p>
             <strong>Total Team Members:</strong> {{ teamData.totalMembers }}
           </p>
-          <p>
-            <strong>Staff Working in Office:</strong> {{ teamData.officeStaff }}
-          </p>
-          <p>
-            <strong>Staff Working from Home:</strong> {{ teamData.wfhStaff }}
-          </p>
+
+          <!-- Add a solid line between "Total Team Members" and staff info -->
+          <hr />
+
+          <!-- Staff Working in Office -->
+          <h6 class="text-center">Staff Working in Office</h6>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="time-period">AM (9am-1pm)</th>
+                <th class="time-period">PM (2pm-6pm)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.officeStaff?.am || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.officeStaff?.pm || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+              </tr>
+              <tr>
+                <th class="time-period" colspan="2">Full Day (9am-6pm)</th>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.officeStaff?.fullDay || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Staff Working from Home -->
+          <h6 class="text-center">Staff Working from Home</h6>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th class="time-period">AM (9am-1pm)</th>
+                <th class="time-period">PM (2pm-6pm)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.wfhStaff?.am || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+                <td>
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.wfhStaff?.pm || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+              </tr>
+              <tr>
+                <th class="time-period" colspan="2">Full Day (9am-6pm)</th>
+              </tr>
+              <tr>
+                <td colspan="2">
+                  <ol class="staff-details">
+                    <li
+                      v-for="staff in teamData?.wfhStaff?.fullDay || []"
+                      :key="staff.name"
+                    >
+                      [{{ staff.role }}] {{ staff.name }}
+                    </li>
+                  </ol>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
           <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
         </div>
@@ -75,26 +172,82 @@
             {
               name: "Team Alpha",
               totalMembers: 10,
-              officeStaff: 6,
-              wfhStaff: 4,
+              schedule: {
+                "2024-09-01": {
+                  officeStaff: {
+                    am: [
+                      { role: "Developer", name: "John Doe" },
+                      { role: "Manager", name: "Alice Smith" },
+                    ],
+                    pm: [
+                      { role: "Designer", name: "Emily Clark" },
+                      { role: "Tester", name: "Robert Brown" },
+                    ],
+                    fullDay: [{ role: "Lead Developer", name: "Eve Davis" }],
+                  },
+                  wfhStaff: {
+                    am: [{ role: "Developer", name: "Mike Johnson" }],
+                    pm: [{ role: "Tester", name: "Samuel Adams" }],
+                    fullDay: [{ role: "HR", name: "Sophia White" }],
+                  },
+                },
+                "2024-09-02": {
+                  officeStaff: {
+                    am: [{ role: "Designer", name: "Jessica Blue" }],
+                    pm: [{ role: "Manager", name: "Thomas Green" }],
+                    fullDay: [{ role: "Developer", name: "Chris Red" }],
+                  },
+                  wfhStaff: {
+                    am: [{ role: "Tester", name: "Steve Purple" }],
+                    pm: [{ role: "HR", name: "Sophia White" }],
+                    fullDay: [{ role: "Lead Developer", name: "Eve Davis" }],
+                  },
+                },
+              },
             },
-            { name: "Team Beta", totalMembers: 8, officeStaff: 3, wfhStaff: 5 },
             {
-              name: "Team Gamma",
-              totalMembers: 12,
-              officeStaff: 7,
-              wfhStaff: 6,
-            },
-            {
-              name: "Team Delta",
-              totalMembers: 15,
-              officeStaff: 10,
-              wfhStaff: 5,
+              name: "Team Beta",
+              totalMembers: 10,
+              schedule: {
+                "2024-09-01": {
+                  officeStaff: {
+                    am: [
+                      { role: "Developer", name: "Michael Smith" },
+                      { role: "Designer", name: "Laura Jones" },
+                    ],
+                    pm: [
+                      { role: "Manager", name: "Brian Taylor" },
+                      { role: "Tester", name: "Olivia Martinez" },
+                    ],
+                    fullDay: [{ role: "Lead Developer", name: "Ethan Brown" }],
+                  },
+                  wfhStaff: {
+                    am: [{ role: "HR", name: "Sophia Wilson" }],
+                    pm: [{ role: "Developer", name: "James Lee" }],
+                    fullDay: [{ role: "Designer", name: "Emily Davis" }],
+                  },
+                },
+                "2024-09-02": {
+                  officeStaff: {
+                    am: [{ role: "Tester", name: "Isabella White" }],
+                    pm: [{ role: "Developer", name: "William Harris" }],
+                    fullDay: [],
+                  },
+                  wfhStaff: {
+                    am: [{ role: "HR", name: "Emma Scott" }],
+                    pm: [{ role: "Designer", name: "Ava Garcia" }],
+                    fullDay: [
+                      { role: "Lead Developer", name: "Noah Martinez" },
+                      { role: "Manager", name: "Daniel Young" },
+                    ],
+                  },
+                },
+              },
             },
           ],
-          selectedTeam: "Team Alpha",
+          selectedTeam: "",
           selectedDate: "",
-          teamData: {},
+          teamData: null,
           statusMessage: "",
           statusClass: "",
           minDate: "",
@@ -103,15 +256,27 @@
         methods: {
           updateInfo() {
             const team = this.teams.find((t) => t.name === this.selectedTeam);
-            this.teamData = team || {};
-            this.setStatus();
-            console.log(
-              `Selected Team: ${this.selectedTeam}, Selected Date: ${this.selectedDate}`
-            );
+            const schedule = team?.schedule?.[this.selectedDate];
+
+            if (team && schedule) {
+              this.teamData = {
+                totalMembers: team.totalMembers,
+                officeStaff: schedule.officeStaff,
+                wfhStaff: schedule.wfhStaff,
+              };
+              this.setStatus();
+            } else {
+              this.teamData = [];
+              this.statusMessage = "No schedule available for this date.";
+              this.statusClass = "text-danger";
+            }
           },
+
           setStatus() {
             const { totalMembers, wfhStaff } = this.teamData;
-            const wfhPercentage = (wfhStaff / totalMembers) * 100;
+            const wfhTotal =
+              wfhStaff.am.length + wfhStaff.pm.length + wfhStaff.fullDay.length;
+            const wfhPercentage = (wfhTotal / totalMembers) * 100;
 
             if (wfhPercentage > 50) {
               this.statusMessage = "WFH Team Quota Exceeded";
@@ -123,6 +288,9 @@
               this.statusMessage = "WFH Team Quota Not Reached";
               this.statusClass = "text-success";
             }
+          },
+          goHome() {
+            window.location.href = "../Home/home.html";
           },
           setDateLimits() {
             const today = new Date();
@@ -139,11 +307,11 @@
             this.minDate = minDate.toISOString().split("T")[0];
             this.maxDate = maxDate.toISOString().split("T")[0];
           },
-          goHome() {
-            window.location.href = "../Home/home.html";
-          },
         },
         mounted() {
+          if (this.teams.length > 0) {
+            this.selectedTeam = this.teams[0].name; // Set to the first team's name initially
+          }
           this.setDateLimits();
           this.updateInfo();
         },

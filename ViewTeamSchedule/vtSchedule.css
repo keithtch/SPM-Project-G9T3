@@ -1,0 +1,25 @@
+.card {
+  margin-bottom: 20px;
+  padding: 20px;
+}
+.table {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.staff-details {
+  list-style-type: decimal;
+  padding-left: 20px;
+}
+.staff-details li {
+  margin-bottom: 10px;
+}
+.time-period {
+  text-align: center;
+}
+.table th,
+.table td {
+  vertical-align: middle;
+}
+hr {
+  border: 1px solid #000;
+}
