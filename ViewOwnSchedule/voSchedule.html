@@ -39,92 +39,95 @@
 
     <!-- External Libraries and Vue.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
 
-    <script>
-      
-      const { createApp } = Vue
-
-      createApp({
-        data() {
-          return {
-            TeamArr : [],
-            ApplicationArr: [],
-            ScheduleArr: [],
-          };
-        },
-
-        mounted(){
-          //to get relevant login user to filter Team IDs.
-          this.staffID=localStorage.getItem('staffID')
-          fetch('http://localhost:5000/employee')
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          ApplicationArr: [],
+          ScheduleArr: [],
+          staffID: ''
+        };
+      },
+    
+      mounted() {
+        this.staffID = localStorage.getItem('staffID');
+        fetch('http://localhost:5000/employee')
           .then(response => response.json())
           .then(returnedJSON => {
             dataArr = returnedJSON.data;
-            staffInd = this.findId(this.staffID,dataArr)
-            report = dataArr[staffInd][7]
-            this.TeamArr = this.findTeam(report,dataArr)
 
+            staffInd = this.findId(this.staffID, dataArr);
+    
             fetch('http://localhost:5001/application')
-            .then(response => response.json())
-            .then(returnedJSON =>{
-              this.ApplicationArr = returnedJSON.data; //2D array
-
-              //Name, Role, Status_of_Application, Date, Reason. 
-              for (entry of this.ApplicationArr){
-                if(entry[3]==='Approved'){
-                  for (member of this.TeamArr){
-                    if (entry[0]==member[0]){
-                      member_name = member[1]
-                      member_role = member[2]
-                      startDate = entry[1]
-                      reason = entry[4]
-                      this.ScheduleArr.push({
-                        name: member_name,
-                        role: member_role,
-                        date: startDate,
-                        reason: reason
-                      })
+              .then(response => response.json())
+              .then(returnedJSON => {
+                this.ApplicationArr = returnedJSON.data;
+                console.log(this.ApplicationArr)
+    
+                for (entry of this.ApplicationArr) {
+                  if (entry[4] == 'Approved' && entry[0] == this.staffID) {
+                    console.log('test')
+                    const member_Fname = dataArr[staffInd][1];
+                    const member_Lname = dataArr[staffInd][2];
+                    const member_role = dataArr[staffInd][4];
+                    const startDate = entry[1];
+                    const shift = entry[2];
+                    const reason = entry[5];
+    
+                    let startTime, endTime;
+                    if (shift === 'AM') {
+                      startTime = startDate + 'T09:00:00';
+                      endTime = startDate + 'T13:00:00';
+                    } else if (shift === 'PM') {
+                      startTime = startDate + 'T14:00:00';
+                      endTime = startDate + 'T18:00:00';
+                    } else {
+                      startTime = startDate + 'T09:00:00';
+                      endTime = startDate + 'T18:00:00';
                     }
+    
+                    this.ScheduleArr.push({
+                      title: `${member_Fname} ${member_Lname} (${member_role})`,
+                      start: startTime,
+                      end: endTime,
+                      shift: shift,
+                      description: `Work from home`,
+                      location: `Home`,
+                      reason: reason,
+                    });
+
                   }
                 }
-              }
-              console.log(this.ScheduleArr) //for the data manipulation for frontend.
-              //returns a single array, containing multiple JSONs of approved WFH arrangments to be displayed on schedule.
-            })
+    
+                // Update the calendar after ScheduleArr is populated
+                this.updateCalendarEvents();
+              });             
+
           })
           .catch(error => console.error('Error fetching data:', error));
-
-
+      },
+    
+      methods: {
+        findId(id, arr) {
+          for (let i = 0; i < arr.length; i++) {
+            if (id == arr[i][0]) {
+              return i;
+            }
+          }
+          return 0;
         },
-
-        methods: {
-          findId(id,arr) {
-                    for (let i = 0; i < arr.length; i++) {
-                        if (id == arr[i][0]) {
-                            return i
-                        }
-                    }
-                    return 0
-                },
-          //findTeam only finds those within the team (horizontal level)
-          //Never those below/above.
-          findTeam(id,arr) {
-              team_arr=[]
-              for (let i = 0; i < arr.length; i++) {
-                  if (id == arr[i][7]) {
-                    //console.log(arr[i][1])
-                      team_arr.push([arr[i][0],arr[i][1]+' '+arr[i][2],arr[i][4]])
-                  }
-              }
-
-              return team_arr
-          },
-
-        }
-      }).mount('#app')
-
-
-    </script>
+    
+        updateCalendarEvents() {
+          $('#calendar').fullCalendar('removeEvents'); // Remove existing events
+          $('#calendar').fullCalendar('addEventSource', this.ScheduleArr); // Add new events
+          $('#calendar').fullCalendar('rerenderEvents'); // Re-render the events
+        },
+      }
+    });
+  </script>    
+    
   </body>
 </html>

@@ -16,51 +16,15 @@ $(document).ready(function () {
       end: moment().add(3, "months").format("YYYY-MM-DD"),
     },
 
-    // Add WFH events
-    events: [
-      {
-        id: 7,
-        title: "WFH (AM) - John Doe (Engineer)",
-        start: "2024-09-20T09:00:00",
-        end: "2024-09-20T13:00:00",
-        description: "Role: Engineer\nWorking from home (9am-1pm)",
-        location: "Home",
-        reason: "I AM WESLEY",
-      },
-      {
-        id: 8,
-        title: "WFH (PM) - John Doe (Engineer)",
-        start: "2024-09-21T14:00:00",
-        end: "2024-09-21T18:00:00",
-        description: "Role: Engineer\nWorking from home (2pm-6pm)",
-        location: "Home",
-        reason: "I AM WESLEY",
-      },
-      {
-        id: 9,
-        title: "WFH (Full day) - John Doe (Engineer)",
-        start: "2024-09-22T09:00:00",
-        end: "2024-09-22T18:00:00",
-        description: "Role: Engineer\nWorking from home (9am-6pm)",
-        location: "Home",
-        reason: "I AM WESLEY",
-      },
-      {
-        id: 10,
-        title: "WFH (Full day) - John Doe (Engineer)",
-        start: "2024-09-23T09:00:00",
-        end: "2024-09-23T18:00:00",
-        description: "Role: Engineer\nWorking from home (9am-6pm)",
-        location: "Home",
-        reason: "I AM WESLEY",
-      },
-    ],
+    // Events will be dynamically populated by Vue
+    events: [],
 
     // Show event details on hover
     eventMouseover: function (event, jsEvent) {
       var boxContent = `
               <strong>${event.title}</strong><br>
               <em>${event.description}</em><br>
+              Shift: ${event.shift}<br>
               Location: ${event.location}<br>
               Reason: ${event.reason}
           `;
