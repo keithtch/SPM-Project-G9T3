@@ -48,7 +48,24 @@ def updateDates():
     finally:
         connection.close()
     
-
+@app.route('/getApps',methods=['POST'])
+def getApps():
+    data = request.get_json()
+    ids = data.get('ids')
+    print(ids)
+    idQuery = ', '.join(['%s'] * len(ids))
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM Application WHERE Staff_ID IN ({idQuery})",ids)
+            results = cursor.fetchall()
+            if results:
+                print(results)
+                return jsonify({"status": "success", "results": results}), 200
+            else:
+                return jsonify({"status": "error", "message": "No apps received"}), 400
+    finally:
+        connection.close()
     
 
 if __name__ == '__main__':
