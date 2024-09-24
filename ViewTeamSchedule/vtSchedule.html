@@ -164,10 +164,14 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
     <script>
       new Vue({
         el: "#app",
         data: {
+          staffID: localStorage.getItem('staffID'),
+          currEmployee: [],
           teams: [
             {
               name: "Team Alpha",
@@ -307,13 +311,22 @@
             this.minDate = minDate.toISOString().split("T")[0];
             this.maxDate = maxDate.toISOString().split("T")[0];
           },
+
         },
-        mounted() {
+        async mounted() {
           if (this.teams.length > 0) {
             this.selectedTeam = this.teams[0].name; // Set to the first team's name initially
           }
           this.setDateLimits();
           this.updateInfo();
+
+          const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
+          var teamData = team.data.employees
+          var idArr = []
+          for (employee of teamData) {
+            idArr.push(employee[0])
+          }
+          console.log(idArr)
         },
       });
     </script>
