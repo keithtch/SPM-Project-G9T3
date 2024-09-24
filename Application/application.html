@@ -125,17 +125,11 @@
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
   <script>
-    fetch('http://localhost:5001/application')
-      .then(response => response.json())
-      .then(data => {
-        console.log(data.data);
-      })
-      .catch(error => console.error('Error fetching data:', error));
-
     new Vue({
       el: "#app",
       data: {
         staffID: localStorage.getItem('staffID'),
+        manager: localStorage.getItem('Reporting_Manager'),
         applicationType: "recurring", // default type is recurring
         recurringDays: [], // days selected for recurring
         dateArray: [],
@@ -192,10 +186,18 @@
           // Handle application submission logic
           console.log("Application Type:", this.applicationType);
           console.log("WFH Reason:", this.wfhReason);
-          console.log("Selected Days (Recurring):", this.dayOptions);
-          console.log("Selected Dates (Fixed):", this.dateOptions);
+          //console.log('dayOptions: ',this.dayOptions)
+          console.log('dateOptions: ',this.dateOptions)
+          //console.log("Selected Days (Recurring):", this.dayOptions);
+          //console.log("Selected Dates (Fixed):", this.dateOptions);
 
           if (this.applicationType == 'recurring') {
+            //runs through the start and end date given by the user and gives the dates of the Days specified by user.
+            // e.g. User gives Monday(AM), 23/9/24 - 30/9/24, should return 23/9 and 30/9, both AM. 
+
+            //let plainDayOptions = JSON.parse(JSON.stringify(this.dayOptions)); //for seeing the raw Object
+            //console.log(plainDayOptions); //dayOptions are stored with key being the day in Number form and the selected Time_Of_Day. e.g. Wednesday (AM) = {3:'AM'}
+
             this.dateArray = [];
             if (this.recurringStartDate && this.recurringEndDate) {
               let currentDate = new Date(this.recurringStartDate);
@@ -203,31 +205,38 @@
 
               while (currentDate <= end) {
                 if (this.recurringDays.includes(currentDate.getDay())) {
-                  this.dateArray.push(currentDate.toISOString().split('T')[0]);
+                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],this.dayOptions[currentDate.getDay()],this.manager,'Pending',this.wfhReason]);
                 }
                 currentDate.setDate(currentDate.getDate() + 1);
               }
             }
             console.log(this.dateArray);
-          } else if (this.applicationType == 'fixed') {
+          } 
+          else if (this.applicationType == 'fixed') {
+            let plainDateOptions = JSON.parse(JSON.stringify(this.dateOptions));
+            console.log(plainDateOptions); //
             this.dateArray = [];
             if (this.startDate && this.endDate) {
               let currentDate = new Date(this.startDate);
               const end = new Date(this.endDate);
 
               while (currentDate <= end) {
-                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0], '130002', 'Pending']);
+                time_of_day = this.dateOptions[currentDate.toISOString().split('T')[0]]
+                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0],time_of_day, this.manager, 'Pending', this.wfhReason]);
                 currentDate.setDate(currentDate.getDate() + 1);
               }
             }
             console.log(this.dateArray);
           }
+
           this.getDates();
+          this.dateArray =[]
+          this.wfhReason = ''
         },
         getDates() {
           axios.post('http://localhost:5001/updateDates', { dates: this.dateArray })
             .then(response => {
-              console.log('Success');
+              console.log('Successfully posted to updateDates.');
             })
             .catch(error => {
               console.error('Error', error);

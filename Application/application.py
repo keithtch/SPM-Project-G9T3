@@ -37,8 +37,8 @@ def updateDates():
     try:
         with connection.cursor() as cursor:
             for entry in dates:
-                cursor.execute("""INSERT INTO Application (Staff_ID, Date_Applied, Reporting_Manager, Status_Of_Application)
-    VALUES (%s,%s,%s,%s)""",(entry[0],entry[1],entry[2],entry[3]))
+                cursor.execute("""INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
+    VALUES (%s,%s,%s,%s,%s,%s)""",(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5]))
             connection.commit()
             if dates:
                 print(dates)
