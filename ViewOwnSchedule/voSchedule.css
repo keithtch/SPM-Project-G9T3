@@ -36,3 +36,9 @@ body {
   padding: 10px 20px;
   transition: background-color 0.3s, transform 0.3s;
 }
+
+.button {
+  padding-top: 10px;
+  display: flex;
+  justify-content: center;
+}

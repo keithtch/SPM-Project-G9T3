@@ -26,6 +26,15 @@
   
       <!-- Detail Box for Hover Effect -->
       <div id="detailBox"></div>
+
+      <div class="button">
+        <button type="button" class="btn btn-primary" @click="apply">Apply WFH</>
+      </div>
+
+      <div class="button">
+        <button type="button" class="btn btn-primary" @click="goBack">Go Back to Home Page</>
+      </div>
+
     </div>
 
     <!-- External JavaScript Files -->
@@ -124,6 +133,14 @@
           $('#calendar').fullCalendar('removeEvents'); // Remove existing events
           $('#calendar').fullCalendar('addEventSource', this.ScheduleArr); // Add new events
           $('#calendar').fullCalendar('rerenderEvents'); // Re-render the events
+        },
+
+        apply() {
+          window.location.href = "../Application/application.html"; 
+        },
+
+        goBack() {
+          window.location.href = "../Home/home.html"; 
         },
       }
     });
