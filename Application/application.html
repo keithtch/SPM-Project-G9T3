@@ -117,6 +117,7 @@
       <div class="text-center">
         <b-button variant="primary" class="btn-custom" @click="goBack">Go Back to Home Page</b-button>
       </div>
+
     </div>
   </div>
   
@@ -128,6 +129,8 @@
     new Vue({
       el: "#app",
       data: {
+        staffArr:[],
+        applicationArr:[],
         staffID: localStorage.getItem('staffID'),
         manager: localStorage.getItem('Reporting_Manager'),
         applicationType: "recurring", // default type is recurring
@@ -181,7 +184,6 @@
           }
         },
         submitApplication() {
-          alert('Application Submitted!');
           
           // Handle application submission logic
           console.log("Application Type:", this.applicationType);
@@ -235,13 +237,26 @@
         },
         getDates() {
           axios.post('http://localhost:5001/updateDates', { dates: this.dateArray })
-            .then(response => {
-              console.log('Successfully posted to updateDates.');
-            })
-            .catch(error => {
-              console.error('Error', error);
-            });
+          .then(response => {
+            alert('Application Submitted!');
+            console.log('Successfully posted to updateDates.');
+          })
+          .catch(error => {
+            alert('You have a pending application for this date and shift!');
+            console.error('Error', error);
+          });
         },
+        //getApplications(){
+        //  this.staffArr.push(this.staffID)
+        //  axios.post('http://localhost:5001/getApps', { ids: this.staffArr })
+        //    .then(response => {
+        //      this.applicationArr=response
+        //      console.log(this.applicationArr.data.results);
+        //    })
+        //    .catch(error => {
+        //      console.error('Error', error);
+        //    });
+        //},
         goBack() {
           window.location.href = "../Home/home.html"; 
         }
