@@ -56,7 +56,8 @@
       data() {
         return {
           ApplicationArr: [],
-          ScheduleArr: [],
+          AScheduleArr: [],
+          PScheduleArr: [],
           staffID: ''
         };
       },
@@ -78,7 +79,6 @@
     
                 for (entry of this.ApplicationArr) {
                   if (entry[4] == 'Approved' && entry[0] == this.staffID) {
-                    console.log('test')
                     const member_Fname = dataArr[staffInd][1];
                     const member_Lname = dataArr[staffInd][2];
                     const member_role = dataArr[staffInd][4];
@@ -98,7 +98,7 @@
                       endTime = startDate + 'T18:00:00';
                     }
     
-                    this.ScheduleArr.push({
+                    this.AScheduleArr.push({
                       title: `${member_Fname} ${member_Lname} (${member_role})`,
                       start: startTime,
                       end: endTime,
@@ -106,8 +106,39 @@
                       description: `Work from home`,
                       location: `Home`,
                       reason: reason,
-                    });
+                    })
+                    
 
+                  }
+                  else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
+                    const member_Fname = dataArr[staffInd][1];
+                    const member_Lname = dataArr[staffInd][2];
+                    const member_role = dataArr[staffInd][4];
+                    const startDate = entry[1];
+                    const shift = entry[2];
+                    const reason = entry[5];
+    
+                    let startTime, endTime;
+                    if (shift === 'AM') {
+                      startTime = startDate + 'T09:00:00';
+                      endTime = startDate + 'T13:00:00';
+                    } else if (shift === 'PM') {
+                      startTime = startDate + 'T14:00:00';
+                      endTime = startDate + 'T18:00:00';
+                    } else {
+                      startTime = startDate + 'T09:00:00';
+                      endTime = startDate + 'T18:00:00';
+                    }
+    
+                    this.PScheduleArr.push({
+                      title: `${member_Fname} ${member_Lname} (${member_role})`,
+                      start: startTime,
+                      end: endTime,
+                      shift: shift,
+                      description: `Work from home`,
+                      location: `Home`,
+                      reason: reason,
+                    })
                   }
                 }
     
@@ -131,7 +162,15 @@
     
         updateCalendarEvents() {
           $('#calendar').fullCalendar('removeEvents'); // Remove existing events
-          $('#calendar').fullCalendar('addEventSource', this.ScheduleArr); // Add new events
+          $('#calendar').fullCalendar('addEventSource', {
+            events: this.AScheduleArr, // Approved Applications
+            color: '#28a745',   
+          });
+          
+          $('#calendar').fullCalendar('addEventSource', {
+            events: this.PScheduleArr, // Pending Applications
+            color: '#ffc107', 
+          });
           $('#calendar').fullCalendar('rerenderEvents'); // Re-render the events
         },
 
