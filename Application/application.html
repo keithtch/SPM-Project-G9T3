@@ -49,7 +49,9 @@
             <div class="col-md-6">
               <b-form-datepicker
                 v-model="recurringStartDate"
+                :today="currentDate"
                 :min="minDate"
+                :max="maxDate"
                 placeholder="Start Date"
                 class="w-100"
               ></b-form-datepicker>
@@ -58,6 +60,7 @@
               <b-form-datepicker
                 v-model="recurringEndDate"
                 :min="recurringStartDate"
+                :max="maxDate"
                 placeholder="End Date"
                 class="w-100"
               ></b-form-datepicker>
@@ -73,7 +76,9 @@
             <div class="col-md-6">
               <b-form-datepicker
                 v-model="startDate"
+                :today="currentDate"
                 :min="minDate"
+                :max="maxDate"
                 placeholder="Start Date"
                 class="w-100"
               ></b-form-datepicker>
@@ -82,6 +87,7 @@
               <b-form-datepicker
                 v-model="endDate"
                 :min="startDate"
+                :max="maxDate"
                 placeholder="End Date"
                 class="w-100"
               ></b-form-datepicker>
@@ -155,7 +161,9 @@
         recurringEndDate: null, // end date for recurring
         startDate: null, // start date for fixed period
         endDate: null, // end date for fixed period
-        minDate: new Date().toISOString().split("T")[0] // current date as minimum
+        currentDate: new Date().toISOString().split("T")[0], // current date 
+        minDate: '',
+        maxDate: ''
       },
       
       watch: {
@@ -165,6 +173,10 @@
         endDate() {
           this.updateDateArray();
         }
+      },
+
+      mounted() {
+        this.setMinMaxDates(); 
       },
 
       methods: {
@@ -246,17 +258,21 @@
             console.error('Error', error);
           });
         },
-        //getApplications(){
-        //  this.staffArr.push(this.staffID)
-        //  axios.post('http://localhost:5001/getApps', { ids: this.staffArr })
-        //    .then(response => {
-        //      this.applicationArr=response
-        //      console.log(this.applicationArr.data.results);
-        //    })
-        //    .catch(error => {
-        //      console.error('Error', error);
-        //    });
-        //},
+       
+        setMinMaxDates() {
+          const currentDate = new Date();
+    
+          // Set minDate (2 months back)
+          const minDate = new Date(currentDate);
+          minDate.setMonth(currentDate.getMonth() - 2);
+          this.minDate = minDate.toISOString().split('T')[0]; 
+    
+          // Set maxDate (3 months forward)
+          const maxDate = new Date(currentDate);
+          maxDate.setMonth(currentDate.getMonth() + 3);
+          this.maxDate = maxDate.toISOString().split('T')[0];
+        },
+
         goBack() {
           window.location.href = "../Home/home.html"; 
         }
