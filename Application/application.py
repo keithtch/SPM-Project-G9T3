@@ -52,18 +52,24 @@ def updateDates():
 def getApps():
     data = request.get_json()
     ids = data.get('ids')
-    print(ids)
+    date = data.get('date')
+    status = data.get('status')
+    print(ids,date)
     idQuery = ', '.join(['%s'] * len(ids))
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM Application WHERE Staff_ID IN ({idQuery})",ids)
+            cursor.execute(f"SELECT * FROM Application WHERE Staff_ID IN ({idQuery}) AND Date_Applied = %s AND Status_Of_Application = %s",(*ids,date,status))
             results = cursor.fetchall()
+            print(results)
             if results:
                 print(results)
                 return jsonify({"status": "success", "results": results}), 200
+            elif results == ():
+                return jsonify({"status": "success", "message": "No apps received"}), 200
             else:
-                return jsonify({"status": "error", "message": "No apps received"}), 400
+                return jsonify({"status": "error", "message": "SQL failure"}), 400
+
     finally:
         connection.close()
     
