@@ -94,6 +94,8 @@ def getPendingApplications():
 
             if results:
                 return jsonify({"status": "success", "pendingApplications": results}), 200
+            elif len(results) == 0:
+                return jsonify({"status": "success", "pendingApplications": results}), 200
             else:
                 return jsonify({"status": "error", "message": "No pending applications found"}), 404
     finally:
