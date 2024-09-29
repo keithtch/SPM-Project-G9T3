@@ -99,3 +99,37 @@ body {
     padding: 15px; 
   }
 }
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.4em;
+}
+
+.clock-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+}
+
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 1055;
+}

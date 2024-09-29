@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WFHMS</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="home.css" />
+  </head>
+
+  <body>
+    <div id="app">
+
+
+      <!-- Digital Clock -->
+      <div id="clock" class="mt-5">
+        <p class="date">{{ date }}</p>
+        <p class="time">{{ time }}</p>
+        <p class="text">Welcome {{ userName }}! Manage your WFH with WFHMS!</p>
+      </div>
+
+      <!-- Button Section -->
+      <div class="container">
+        <div class="row text-center mt-4">
+          <div class="col-md-6 mb-4">
+            <button class="btn btn-success w-100 action-btn apply-btn" @click="applyWFH">
+              <i class="fas fa-calendar-plus"></i> Apply for WFH
+            </button>
+          </div>
+          <div class="col-md-6 mb-4">
+            <button class="btn btn-warning w-100 action-btn manage-btn" @click="manageRequests">
+              <i class="fas fa-tasks"></i> Manage WFH Applications
+            </button>
+          </div>
+          <div class="col-md-6 mb-4">
+            <button class="btn btn-info w-100 action-btn schedule-btn" @click="viewOwnSchedule">
+              <i class="fas fa-calendar"></i> View Own Schedule
+            </button>
+          </div>
+          <div class="col-md-6 mb-4">
+            <button class="btn btn-info w-100 action-btn team-schedule-btn" @click="viewTeamSchedule">
+              <i class="fas fa-users"></i> View Team Schedule
+            </button>
+          </div>
+          <div class="col-md-12 mt-2">
+            <button class="btn btn-danger w-100 action-btn logout-btn" @click="logOut">
+              Log Out
+            </button>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+
+    <!-- External Libraries and Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
+
+    <script>
+      const { createApp } = Vue;
+createApp({
+        data() {
+          return {
+            userName: "",
+            time: '',
+            date: '',
+            staffID: ''
+          };
+        },
+        mounted() {
+          this.updateTime();
+          setInterval(this.updateTime, 1000);
+          this.staffID = localStorage.getItem('staffID');
+          fetch('http://localhost:5000/employee')
+          .then(response => response.json())
+          .then(returnedJSON => {
+            console.log(returnedJSON);
+            //console.log(this.staffID);
+            dataArr = returnedJSON.data;
+            staffInd = this.findId(this.staffID,dataArr)
+            this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
+            report = dataArr[staffInd][7]
+            // team = this.findTeam(report,dataArr)
+            // console.log(team)
+          })
+          .catch(error => console.error('Error fetching data:', error));
+        },
+        methods: {
+          applyWFH() {
+            alert("Redirecting to apply for Work From Home.");
+            window.location.href = "../Application/application.html";
+          },
+          manageRequests() {
+            alert("Redirecting to manage applications.");
+            window.location.href = "../ManageApplication/mapplication.html";
+          },
+          viewOwnSchedule() {
+            alert("Redirecting to view own schedule.");
+            window.location.href = "../ViewOwnSchedule/voSchedule.html";
+          },
+          viewTeamSchedule() {
+            alert("Redirecting to view team schedule.");
+            window.location.href = "../ViewTeamSchedule/vtSchedule.html";
+          },
+          logOut() {
+            alert("Redirecting to Login Page.");
+            window.location.href = "../Login&Authentication/login.html";
+          },
+          updateTime() {
+            const cd = new Date();
+            const week = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            this.time = this.zeroPadding(cd.getHours(), 2) + ':' + this.zeroPadding(cd.getMinutes(), 2) + ':' + this.zeroPadding(cd.getSeconds(), 2);
+            this.date = this.zeroPadding(cd.getFullYear(), 4) + '-' + this.zeroPadding(cd.getMonth() + 1, 2) + '-' + this.zeroPadding(cd.getDate(), 2) + ' ' + week[cd.getDay()];
+          },
+          zeroPadding(num, digit) {
+            return String(num).padStart(digit, '0');
+          },
+          findId(id,arr) {
+                    for (let i = 0; i < arr.length; i++) {
+                        if (id == arr[i][0]) {
+                            return i
+                        }
+                    }
+                    return 0
+                },
+          findTeam(id,arr) {
+              team_arr=[]
+              for (let i = 0; i < arr.length; i++) {
+                  if (id == arr[i][7]) {
+                      team_arr.push(arr[i][0])
+                  }
+              }
+              return team_arr
+          },
+    
+    
+          
+        }
+      }).mount("#app");
+    </script>
+  </body>
+</html>
