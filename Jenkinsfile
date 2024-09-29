@@ -30,7 +30,7 @@ pipeline {
                 sh '''
                     # Activate the virtual environment and run the Flask web server
                     source venv/bin/activate
-                    export FLASK_APP=your_application.py  # Replace with your main application file
+                    export FLASK_APP=Application/application.py  # Replace with your main application file
                     export FLASK_ENV=development  # Optional: Set to development for debugging
                     flask run --host=0.0.0.0 --port=5000 &  # Run the server in the background
                 '''
