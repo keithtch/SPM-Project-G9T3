@@ -16,16 +16,16 @@ pipeline {
             steps {
                 // Install Python dependencies using pip
                 sh '''
-                    # Install pip if it's not already installed
+                    # Check if pip is installed, if not, install it using get-pip.py
                     if ! command -v pip &> /dev/null; then
                         echo "pip not found, installing..."
-                        sudo apt update
-                        sudo apt install -y python3-pip
+                        curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+                        python3 get-pip.py --user
                     fi
 
                     # Install dependencies from requirements.txt
-                    pip install --upgrade pip # Upgrade pip to the latest version
-                    pip install coverage==7.6.1 Flask==3.0.0 Flask-Cors==4.0.0 PyMySQL==1.1.1 python-dotenv==1.0.1 requests==2.31.0
+                    pip install --upgrade --user pip # Upgrade pip to the latest version
+                    pip install --user coverage==7.6.1 Flask==3.0.0 Flask-Cors==4.0.0 PyMySQL==1.1.1 python-dotenv==1.0.1 requests==2.31.0
                 '''
             }
         }
