@@ -212,6 +212,8 @@
           async updateInfo() {
             console.log('test')
             if (this.selectedTeam && this.selectedDate) {
+              this.totalMembers = this.teamData[this.selectedTeam].length
+
               this.schedule= {
                     office:{
                       AM: [],
