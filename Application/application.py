@@ -52,21 +52,56 @@ def updateDates():
 def getApps():
     data = request.get_json()
     ids = data.get('ids')
-    print(ids)
+    date = data.get('date')
+    status = data.get('status')
+    print(ids,date)
     idQuery = ', '.join(['%s'] * len(ids))
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SELECT * FROM Application WHERE Staff_ID IN ({idQuery})",ids)
+            cursor.execute(f"SELECT * FROM Application WHERE Staff_ID IN ({idQuery}) AND Date_Applied = %s AND Status_Of_Application = %s",(*ids,date,status))
             results = cursor.fetchall()
+            print(results)
             if results:
                 print(results)
                 return jsonify({"status": "success", "results": results}), 200
+            elif results == ():
+                return jsonify({"status": "success", "message": "No apps received"}), 200
             else:
-                return jsonify({"status": "error", "message": "No apps received"}), 400
+                return jsonify({"status": "error", "message": "SQL failure"}), 400
+
     finally:
         connection.close()
-    
+        
+@app.route('/getPendingApplications', methods=['POST'])
+def getPendingApplications():
+    data = request.get_json()
+    reporting_manager_id = data.get('staffID')  # staffID from the front-end
+
+    connection = get_db_connection() 
+    try:
+        with connection.cursor() as cursor:
+            # SQL Query: Join Employee and Application tables to get subordinates' pending applications
+            query = """
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                FROM Employee e
+                JOIN Application a ON e.Staff_ID = a.Staff_ID
+                WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
+                AND a.Status_Of_Application = 'Pending'
+            """
+            cursor.execute(query, (reporting_manager_id,))  # Pass the reporting manager's ID
+            results = cursor.fetchall()
+
+            if results:
+                return jsonify({"status": "success", "pendingApplications": results}), 200
+            elif len(results) == 0:
+                return jsonify({"status": "success", "pendingApplications": results}), 200
+            else:
+                return jsonify({"status": "error", "message": "No pending applications found"}), 404
+    finally:
+        connection.close()
+
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

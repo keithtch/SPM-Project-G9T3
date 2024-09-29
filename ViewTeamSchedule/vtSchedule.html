@@ -37,18 +37,19 @@
           @change="updateInfo"
           class="form-control"
         >
-          <option v-for="team in teams" :key="team.name" :value="team.name">
-            {{ team.name }}
+          <option v-for="(employees, teamName) in teamData" :key="team" :value="teamName">
+            {{ teamName }}
           </option>
         </select>
       </div>
-
-      <div class="card">
-        <div class="card-body" v-if="teamData">
+      <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
+      <!-- Team Data Section -->
+      <div class="card" v-if="teamData">
+        <div class="card-body">
           <h5 class="card-title text-center">Team Information</h5>
           <p><strong>Team Name:</strong> {{ selectedTeam }}</p>
           <p>
-            <strong>Total Team Members:</strong> {{ teamData.totalMembers }}
+            <strong>Total Team Members:</strong> {{ totalMembers }}
           </p>
 
           <!-- Add a solid line between "Total Team Members" and staff info -->
@@ -68,7 +69,7 @@
                 <td>
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.officeStaff?.am || []"
+                      v-for="staff in schedule?.office?.AM || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -78,7 +79,7 @@
                 <td>
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.officeStaff?.pm || []"
+                      v-for="staff in schedule?.office?.PM || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -93,7 +94,7 @@
                 <td colspan="2">
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.officeStaff?.fullDay || []"
+                      v-for="staff in schedule?.office?.fullDay"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -118,7 +119,7 @@
                 <td>
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.wfhStaff?.am || []"
+                      v-for="staff in schedule?.wfh?.AM || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -128,7 +129,7 @@
                 <td>
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.wfhStaff?.pm || []"
+                      v-for="staff in schedule?.wfh?.PM || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -143,7 +144,7 @@
                 <td colspan="2">
                   <ol class="staff-details">
                     <li
-                      v-for="staff in teamData?.wfhStaff?.fullDay || []"
+                      v-for="staff in schedule?.wfh?.fullDay || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -153,8 +154,6 @@
               </tr>
             </tbody>
           </table>
-
-          <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
         </div>
       </div>
 
@@ -170,85 +169,9 @@
       new Vue({
         el: "#app",
         data: {
-          staffID: localStorage.getItem('staffID'),
+          staffID: localStorage.getItem("staffID"),
           currEmployee: [],
-          teams: [
-            {
-              name: "Team Alpha",
-              totalMembers: 10,
-              schedule: {
-                "2024-09-01": {
-                  officeStaff: {
-                    am: [
-                      { role: "Developer", name: "John Doe" },
-                      { role: "Manager", name: "Alice Smith" },
-                    ],
-                    pm: [
-                      { role: "Designer", name: "Emily Clark" },
-                      { role: "Tester", name: "Robert Brown" },
-                    ],
-                    fullDay: [{ role: "Lead Developer", name: "Eve Davis" }],
-                  },
-                  wfhStaff: {
-                    am: [{ role: "Developer", name: "Mike Johnson" }],
-                    pm: [{ role: "Tester", name: "Samuel Adams" }],
-                    fullDay: [{ role: "HR", name: "Sophia White" }],
-                  },
-                },
-                "2024-09-02": {
-                  officeStaff: {
-                    am: [{ role: "Designer", name: "Jessica Blue" }],
-                    pm: [{ role: "Manager", name: "Thomas Green" }],
-                    fullDay: [{ role: "Developer", name: "Chris Red" }],
-                  },
-                  wfhStaff: {
-                    am: [{ role: "Tester", name: "Steve Purple" }],
-                    pm: [{ role: "HR", name: "Sophia White" }],
-                    fullDay: [{ role: "Lead Developer", name: "Eve Davis" }],
-                  },
-                },
-              },
-            },
-            {
-              name: "Team Beta",
-              totalMembers: 10,
-              schedule: {
-                "2024-09-01": {
-                  officeStaff: {
-                    am: [
-                      { role: "Developer", name: "Michael Smith" },
-                      { role: "Designer", name: "Laura Jones" },
-                    ],
-                    pm: [
-                      { role: "Manager", name: "Brian Taylor" },
-                      { role: "Tester", name: "Olivia Martinez" },
-                    ],
-                    fullDay: [{ role: "Lead Developer", name: "Ethan Brown" }],
-                  },
-                  wfhStaff: {
-                    am: [{ role: "HR", name: "Sophia Wilson" }],
-                    pm: [{ role: "Developer", name: "James Lee" }],
-                    fullDay: [{ role: "Designer", name: "Emily Davis" }],
-                  },
-                },
-                "2024-09-02": {
-                  officeStaff: {
-                    am: [{ role: "Tester", name: "Isabella White" }],
-                    pm: [{ role: "Developer", name: "William Harris" }],
-                    fullDay: [],
-                  },
-                  wfhStaff: {
-                    am: [{ role: "HR", name: "Emma Scott" }],
-                    pm: [{ role: "Designer", name: "Ava Garcia" }],
-                    fullDay: [
-                      { role: "Lead Developer", name: "Noah Martinez" },
-                      { role: "Manager", name: "Daniel Young" },
-                    ],
-                  },
-                },
-              },
-            },
-          ],
+          teams: {}, // Populated from the API /getTeamsNames that hasnt been created
           selectedTeam: "",
           selectedDate: "",
           teamData: null,
@@ -256,31 +179,109 @@
           statusClass: "",
           minDate: "",
           maxDate: "",
+          totalMembers: "",
+          totalWFH: 0,
+          schedule:{
+                    office:{
+                      AM: [],
+                      PM: [],
+                      fullDay: []
+                    },
+                    wfh:{
+                      AM: [],
+                      PM: [],
+                      fullDay: []
+                    }}, 
         },
         methods: {
-          updateInfo() {
-            const team = this.teams.find((t) => t.name === this.selectedTeam);
-            const schedule = team?.schedule?.[this.selectedDate];
-
-            if (team && schedule) {
-              this.teamData = {
-                totalMembers: team.totalMembers,
-                officeStaff: schedule.officeStaff,
-                wfhStaff: schedule.wfhStaff,
-              };
-              this.setStatus();
-            } else {
-              this.teamData = [];
-              this.statusMessage = "No schedule available for this date.";
+          // Fetch Team Names from the API 'getTeamNames'
+          async fetchTeams() {
+            try {
+              const response = await axios.get(
+                "http://localhost:5000/getTeamNames"
+              ); // Adjust the API endpoint as needed
+              this.teams = response.data.teams; // Populate teams from API response
+            } catch (error) {
+              console.error("Error fetching teams:", error);
+              this.statusMessage =
+                "Unable to load team names. Please try again later.";
               this.statusClass = "text-danger";
+            }
+          },
+          // Fetching team data based on selected team and date
+          async updateInfo() {
+            console.log('test')
+            if (this.selectedTeam && this.selectedDate) {
+              this.schedule= {
+                    office:{
+                      AM: [],
+                      PM: [],
+                      fullDay: []
+                    },
+                    wfh:{
+                      AM: [],
+                      PM: [],
+                      fullDay: []
+                    }}
+              this.totalWFH = 0
+              try {
+                var idArr = []
+                var tempEmp = {}
+                for (employee of this.teamData[this.selectedTeam]) {
+                  idArr.push(employee[0])
+                  tempEmp[employee[0]] = {role:employee[4],name:employee[1]+ " " + employee[2]}
+                }
+                // console.log(idArr)
+                // console.log(this.schedule)
+                const apps = await axios.post('http://localhost:5001/getApps', {ids: idArr,date: this.selectedDate, status: "Approved"})
+                const applications = apps.data.results
+                // console.log(applications)
+                if (applications) {
+                  for (app of applications) {
+                    this.totalWFH ++
+                    if (app[2] == "AM") {
+                      this.schedule.wfh.AM.push(tempEmp[app[0]])
+                      this.schedule.office.PM.push(tempEmp[app[0]])
+                      delete tempEmp[app[0]]
+                      } else if (app[2] == "PM") {
+                      this.schedule.wfh.PM.push(tempEmp[app[0]])
+                      this.schedule.office.AM.push(tempEmp[app[0]])
+                      delete tempEmp[app[0]]
+                      }
+                    }
+                  }
+                for (key in tempEmp) {
+                  this.schedule.office.fullDay.push(tempEmp[key])
+                }
+                
+                this.setStatus();
+              } catch (error) {
+                console.error("Failed to load team schedules.", error);
+                this.teamData = null;
+                this.statusMessage =
+                  "Failed to load team schedules. Please try again later.";
+                this.statusClass = "text-danger";
+              }
+            } else {
+              if (this.selectedTeam) {
+                this.totalMembers = this.teamData[this.selectedTeam].length
+                console.log(this.teamData)
+              }
+              // this.teamData = [];
+              this.statusMessage = "Please select both a team and a date.";
+              this.statusClass = "text-warning";
             }
           },
 
           setStatus() {
-            const { totalMembers, wfhStaff } = this.teamData;
-            const wfhTotal =
-              wfhStaff.am.length + wfhStaff.pm.length + wfhStaff.fullDay.length;
-            const wfhPercentage = (wfhTotal / totalMembers) * 100;
+            console.log(this.totalWFH)
+            totalMembers = this.totalMembers
+            if (totalMembers === 0) {
+              this.statusMessage = "No team members.";
+              this.statusClass = "text-muted";
+              return;
+            }
+            const wfhPercentage = (this.totalWFH / totalMembers) * 100;
 
             if (wfhPercentage > 50) {
               this.statusMessage = "WFH Team Quota Exceeded";
@@ -311,22 +312,20 @@
             this.minDate = minDate.toISOString().split("T")[0];
             this.maxDate = maxDate.toISOString().split("T")[0];
           },
-
         },
         async mounted() {
-          if (this.teams.length > 0) {
-            this.selectedTeam = this.teams[0].name; // Set to the first team's name initially
-          }
+          // await this.fetchTeams();
+
           this.setDateLimits();
           this.updateInfo();
 
           const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
-          var teamData = team.data.employees
-          var idArr = []
-          for (employee of teamData) {
-            idArr.push(employee[0])
-          }
-          console.log(idArr)
+          var teamResult = team.data.employees
+          console.log(teamResult)
+
+          this.teamData = teamResult
+          
+
         },
       });
     </script>

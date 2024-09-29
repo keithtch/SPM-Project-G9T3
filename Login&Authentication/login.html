@@ -18,53 +18,46 @@
                 <input v-model="staffID" type="text" placeholder="Enter your StaffID">
                 <i class='bx bx-briefcase'></i>
             </div>
-            <button class="btn" type="submit">Login</button>
+            <button class="btn" type="submit" :disabled="!isDataLoaded">Login</button>
         </form>
     </div>
 
     <script>
-
-        fetch('http://localhost:5000/employee')
-        .then(response => response.json())
-        .then(returnedJSON => {
-            //console.log(returnedJSON);
-            //console.log(returnedJSON.data[0]);
-            dataArr = returnedJSON.data;
-        })
-        .catch(error => console.error('Error fetching data:', error));
-
         new Vue({
             el: '#app',
             data: {
-                staffID: ''
+                staffID: '',
+                dataArr: [], 
+                isDataLoaded: false 
+            },
+            mounted() {
+                fetch('http://localhost:5000/employee')
+                .then(response => response.json())
+                .then(returnedJSON => {
+                    this.dataArr = returnedJSON.data; 
+                    this.isDataLoaded = true; 
+                })
+                .catch(error => console.error('Error fetching data:', error));
             },
             methods: {
-                checkId(id,arr) {
-                    for (let i = 0; i < arr.length; i++) {
-                        if (id == arr[i][0]) {
-                            localStorage.setItem('Reporting_Manager',arr[i][7])
-                            return 1
+                checkId(id) {
+                    for (let i = 0; i < this.dataArr.length; i++) {
+                        if (id == this.dataArr[i][0]) {
+                            localStorage.setItem('Reporting_Manager', this.dataArr[i][7])
+                            return true;
                         }
                     }
-                    return 0
+                    return false;
                 },
                 login() {
-                    if (this.checkId(this.staffID,dataArr)) {
-                        //Save StaffID to localStorage
+                    if (this.checkId(this.staffID)) {
                         localStorage.setItem('staffID', this.staffID);
                         window.location.href = '../Home/home.html';
                     } else {
-                        alert('Please enter your StaffID');
+                        alert('Invalid StaffID. Please try again.');
                     }
                 }
-
-            },
-            computed: {
-
-            },
-
-            
-
+            }
         });
     </script>
     <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
