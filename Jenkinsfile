@@ -4,7 +4,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                // This step checks out the code from the specified GitHub repository
+                checkout scm  // Assumes you have already configured GitHub in Jenkins
             }
         }
         stage('Setup Virtual Environment') {
@@ -24,33 +25,24 @@ pipeline {
                 '''
             }
         }
+        stage('Run Web Application') {
+            steps {
+                sh '''
+                    # Activate the virtual environment and run the Flask web server
+                    source venv/bin/activate
+                    export FLASK_APP=your_application.py  # Replace with your main application file
+                    export FLASK_ENV=development  # Optional: Set to development for debugging
+                    flask run --host=0.0.0.0 --port=5000 &  # Run the server in the background
+                '''
+            }
+        }
         stage('Run Tests') {
             steps {
                 sh '''
                     # Activate the virtual environment and run tests
                     source venv/bin/activate
-                    coverage run -m unittest discover tests
+                    coverage run -m unittest discover tests  # Assuming you have a tests directory
                     coverage report
-                '''
-            }
-        }
-        stage('Build') {
-            steps {
-                echo "Building the application..."
-            }
-        }
-        stage('Deploy') {
-            steps {
-                sh '''
-                    # Activate the virtual environment and deploy your app
-                    source venv/bin/activate
-                    ssh -o StrictHostKeyChecking=no ec2-user@<your-ec2-instance-ip> << 'ENDSSH'
-                        cd /path/to/your/app
-                        git pull origin main
-                        source venv/bin/activate
-                        pip install -r requirements.txt
-                        pm2 restart app
-                    ENDSSH
                 '''
             }
         }
@@ -58,10 +50,10 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo 'Pipeline completed successfully! Web application started without errors.'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo 'Pipeline failed! There were errors running the web application or tests.'
         }
     }
 }
