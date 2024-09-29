@@ -1,168 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage My WFH Applications</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage My WFH Applications</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css"
+    rel="stylesheet"
+  />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+  <link href="mapplication.css" rel="stylesheet" />
 
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.css"
-      rel="stylesheet"
-    />
-    <link href="mapplication.css" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="app" class="container mt-5">
-      <div class="form-container">
-        <h2 class="text-center mb-4">Manage My WFH Applications</h2>
+</head>
+<body>
+  <div id="app" class="container mt-5">
+    <div class="form-container">
+      <h2 class="text-center mb-4">{{ pageTitle }}</h2>
 
-        <!-- Tabs for Approved, Pending, and Rejected Applications -->
-        <b-nav tabs class="mb-4">
-          <b-nav-item
-            :active="activeTab === 'approved'"
-            @click="setTab('approved')"
-            class="nav-item"
-            >Approved Applications</b-nav-item
-          >
-          <b-nav-item
-            :active="activeTab === 'pending'"
-            @click="setTab('pending')"
-            class="nav-item"
-            >Pending Applications</b-nav-item
-          >
-          <b-nav-item
-            :active="activeTab === 'rejected'"
-            @click="setTab('rejected')"
-            class="nav-item"
-            >Rejected Applications</b-nav-item
-          >
-        </b-nav>
+      <!-- View Indicator - colour so we know what mode we are on -->
+      <div class="mb-3">
+        <div :class="['view-indicator', isManagerView ? 'manager-view' : 'my-view']"></div>
+      </div>
 
-        <!-- Applications Table for Each Tab -->
-        <b-card v-if="activeTab === 'approved'" class="card mb-4">
-          <b-card-header>Approved Applications</b-card-header>
-          <b-card-body>
+      <!-- Switcher Button between Manager & My View Mode -->
+      <div class="text-end mb-3">
+        <b-button 
+          @click="toggleView" 
+          class="btn btn-info"
+        >
+          {{ isManagerView ? 'Switch to My View' : 'Switch to Manager View' }}
+        </b-button>
+      </div>
+
+      <!-- Tabs for Approved, Pending, and Rejected Applications -->
+      <b-nav tabs class="mb-4">
+        <b-nav-item
+          :active="activeTab === 'approved'"
+          @click="setTab('approved')"
+          class="nav-item"
+        >{{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}</b-nav-item>
+        <b-nav-item
+          :active="activeTab === 'pending'"
+          @click="setTab('pending')"
+          class="nav-item"
+        >{{ isManagerView ? 'Team Pending Applications' : 'My Pending Applications' }}</b-nav-item>
+        <b-nav-item
+          :active="activeTab === 'rejected'"
+          @click="setTab('rejected')"
+          class="nav-item"
+        >{{ isManagerView ? 'Team Rejected Applications' : 'My Rejected Applications' }}</b-nav-item>
+      </b-nav>
+
+      <!-- Card for Team Statistics that can be pulled (Only shown in Team View and Pending Applications tab) -->
+      <b-card v-if="isManagerView && activeTab === 'pending'" class="mb-4">
+        <b-card-header>Select Date for Team Statistics</b-card-header>
+        <b-card-body>
+          <b-form-group label="Choose a date:">
+            <b-datepicker v-model="selectedDate" class="mb-3"></b-datepicker>
+          </b-form-group>
+          
+          <div class="mb-2">
+            <strong>Total Number Personnel In Team:</strong> {{ totalNumberInTeam }}
+          </div>
+          <div class="mb-2">
+            <strong>Total Number of Team Members in Office:</strong> {{ totalInOffice }}
+          </div>
+          <div class="mb-2">
+            <strong>Total Number of Team Members WFH:</strong> {{ totalWFH }}
+          </div>
+          <div>
+            <strong>% of Team Members WFH:</strong> {{ percentageWFH }}%
+          </div>
+        </b-card-body>
+      </b-card>
+
+      <!-- Card for Pending Applications both My Own/Manager View -->
+      <b-card v-if="activeTab === 'pending'" class="card mb-4">
+        <b-card-header :class="{'bg-danger text-white': isManagerView}">
+          {{ isManagerView ? 'Team Pending Applications' : 'My Pending Applications' }}
+        </b-card-header>
+        <b-card-body>
+          <b-table v-if="!isManagerView"
+            :items="pendingApplications"
+            :fields="fields"
+            responsive="sm"
+          ></b-table>
+          <div v-else>
             <b-table
-              :items="approvedApplications"
-              :fields="fields"
+              :items="dummyPendingApplications"
+              :fields="managerFields"
               responsive="sm"
-            ></b-table>
-          </b-card-body>
-        </b-card>
+            >
+              <template v-slot:cell(decision)="data">
+                <b-button variant="success" @click="approve(data.item)">Approve</b-button>
+                <!-- If they reject, it'll prompt openRejectionModal take note because we want the reason so a text box comes out :> -->
+                <b-button variant="danger" @click="openRejectionModal(data.item)">Reject</b-button>  
+              </template>
+            </b-table>
+          </div>
+        </b-card-body>
+      </b-card>
 
-        <b-card v-if="activeTab === 'pending'" class="card mb-4">
-          <b-card-header>Pending Applications</b-card-header>
-          <b-card-body>
-            <b-table
-              :items="pendingApplications"
-              :fields="fields"
-              responsive="sm"
-            ></b-table>
-          </b-card-body>
-        </b-card>
+      <!-- Cards for Approved Applications both My Own/Manager View -->
+      <b-card v-if="activeTab === 'approved'" class="card mb-4">
+        <b-card-header :class="{'bg-danger text-white': isManagerView}">
+          {{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}
+        </b-card-header>
+        <b-card-body>
+          <b-table
+            :items="approvedApplications"
+            :fields="fields"
+            responsive="sm"
+          ></b-table>
+        </b-card-body>
+      </b-card>
 
-        <b-card v-if="activeTab === 'rejected'" class="card mb-4">
-          <b-card-header>Rejected Applications</b-card-header>
-          <b-card-body>
-            <b-table
-              :items="rejectedApplications"
-              :fields="fields"
-              responsive="sm"
-            ></b-table>
-          </b-card-body>
-        </b-card>
+      <!-- Card for Rejected Applications both My Own/Manager View -->
+      <b-card v-if="activeTab === 'rejected'" class="card mb-4">
+        <b-card-header :class="{'bg-danger text-white': isManagerView}">
+          {{ isManagerView ? 'Team Rejected Applications' : 'My Rejected Applications' }}
+        </b-card-header>
+        <b-card-body>
+          <b-table
+            :items="rejectedApplications"
+            :fields="fields"
+            responsive="sm"
+          ></b-table>
+        </b-card-body>
+      </b-card>
 
-        <!-- Back to Home Page Button -->
-        <div class="text-center mt-4">
-          <b-button variant="primary" class="btn-primary" @click="goBack"
-            >Go Back to Home Page</b-button
-          >
+      <!-- Manager View -> Reject a pending application prompts the text box -->
+      <div v-if="showRejectionModal" class="modal fade show d-block" tabindex="-1" role="dialog" style="display: block;">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Provide Rejection Reason</h5>
+              <button type="button" class="close" @click="closeRejectionModal">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <textarea v-model="rejectionReason" class="form-control" rows="3" maxlength="250" placeholder="Enter your rejection reason (max 250 characters)"></textarea>
+              <small>{{ rejectionReason.length }} / 250</small>
+            </div>
+            <div class="modal-footer">
+              <b-button variant="secondary" @click="closeRejectionModal">Close</b-button>
+              <b-button variant="primary" @click="submitRejection">Submit</b-button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Back to Home Page Button -->
+      <div class="text-center mt-4">
+        <b-button variant="primary" class="btn-primary" @click="goBack">
+          Go Back to Home Page
+        </b-button>
+      </div>
     </div>
+  </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <script>
-      new Vue({
-        el: "#app",
-        data: {
-          activeTab: "approved",
-          // Data variables for applications
-          approvedApplications: [],
-          pendingApplications: [],  // Now correctly referenced
-          rejectedApplications: [],
-          fields: [
-            { key: "Staff_ID", label: "Staff ID" },
-            { key: "Date_Applied", label: "Date Applied" },
-            { key: "Time_Of_Day", label: "Time of Day" },
-            { key: "Status_Of_Application", label: "Status" },
-            { key: "Reason", label: "Reason" },
-          ],
-          staffID: localStorage.getItem("staffID"), // Fetch staffID from localStorage
+  <script>
+    new Vue({
+      el: "#app",
+      data: {
+        isManagerView: false, // used to toggle between views
+        activeTab: "approved",
+        approvedApplications: [],
+        pendingApplications: [],
+        rejectedApplications: [],
+        dummyPendingApplications: [  // Dummy Data pls remove when u guys connect actual data
+          { Staff_ID: "001", Date_Applied: "2024-09-20", Time_Of_Day: "Morning", Status_Of_Application: "Pending", Reason: "Personal reasons" },
+          { Staff_ID: "002", Date_Applied: "2024-09-21", Time_Of_Day: "Afternoon", Status_Of_Application: "Pending", Reason: "Medical appointment" },
+          { Staff_ID: "003", Date_Applied: "2024-09-22", Time_Of_Day: "Full Day", Status_Of_Application: "Pending", Reason: "Family commitment" },
+        ],
+        fields: [ // Dummy Data pls remove when u guys connect actual data
+          { key: "Staff_ID", label: "Staff ID" },
+          { key: "Date_Applied", label: "Date Applied" },
+          { key: "Time_Of_Day", label: "Time of Day" },
+          { key: "Status_Of_Application", label: "Status" },
+          { key: "Reason", label: "Reason" },
+        ],
+        managerFields: [ // Dummy Data pls remove when u guys connect actual data
+          { key: "Staff_ID", label: "Staff ID" },
+          { key: "Date_Applied", label: "Date Applied" },
+          { key: "Time_Of_Day", label: "Time of Day" },
+          { key: "Status_Of_Application", label: "Status" },
+          { key: "Reason", label: "Reason" },
+          { key: "decision", label: "Decision" },
+        ],
+        showRejectionModal: false,
+        rejectionReason: '',
+        selectedDate: null,
+        totalNumberInTeam: 50, // Dummy Data pls remove when u guys connect actual data
+        totalInOffice: 30, // Dummy Data pls remove when u guys connect actual data
+        totalWFH: 20, // Dummy Data pls remove when u guys connect actual data
+      },
+      computed: {
+        percentageWFH() {
+          return ((this.totalWFH / this.totalNumberInTeam) * 100).toFixed(2);
         },
-        methods: {
-          async fetchPendingRequests() {
-            try {
-              const response = await axios.post(
-                "http://localhost:5001/getPendingApplications",
-                {
-                  staffID: this.staffID, // Pass staffID to the backend
-                }
-              );
-    
-              if (response.data.status === "success") {
-                const rawData = response.data.pendingApplications;
-    
-                // Handle zero or multiple requests
-                if (rawData.length === 0) {
-                  console.log("No pending applications found.");
-                  this.pendingApplications = [];
-                } else {
-                  console.log("Pending Applications:", rawData);
-    
-                  // Assuming the structure is a list of arrays, where each array contains the values for one row
-                  this.pendingApplications = rawData.map(application => {
-                    return {
-                      Staff_ID: application[0],         // First item as Staff ID
-                      Date_Applied: application[1],     // Second item as Date Applied
-                      Time_Of_Day: application[2],      // Third item as Time of Day
-                      Status_Of_Application: application[3], // Fourth item as Status
-                      Reason: application[4],           // Fifth item as Reason
-                    };
-                  });
-    
-                  console.log("Transformed Pending Applications:", this.pendingApplications);
-                }
-              } else {
-                console.error(response.data.message);
-              }
-            } catch (error) {
-              console.error("Error fetching pending requests:", error);
-            }
-          },
-          setTab(tab) {
-            this.activeTab = tab;
-            if (tab === "pending") {
-              this.fetchPendingRequests();  // Fetch pending requests when "Pending" tab is selected
-            }
-          },
-          goBack() {
-            window.location.href = "../Home/home.html";
-          },
+        pageTitle() {
+          return this.isManagerView ? 'Manage Team WFH Applications' : 'Manage My WFH Applications';
         },
-        mounted() {
-          // Fetch the pending requests when the component is mounted
-          this.fetchPendingRequests();
+      },
+      methods: {
+        toggleView() {
+          this.isManagerView = !this.isManagerView;
         },
-      });
-    </script>
-    
-  </body>
+        setTab(tab) {
+          this.activeTab = tab;
+        },
+        goBack() {
+          window.location.href = "../Home/home.html"
+        },
+        approve(item) {
+          // Use this to manage the approval of pending requests, prolly is sql here?
+        },
+        openRejectionModal(item) {
+          this.showRejectionModal = true;  // If manager reject, this leads to the pop out
+        },
+        closeRejectionModal() {
+          this.showRejectionModal = false;
+          this.rejectionReason = '';
+        },
+        submitRejection() {
+          // Logic for submitting rejection reason -> this one will manage the rejection of pending requests, prolly is sql here also?
+          this.closeRejectionModal();
+        },
+      },
+    });
+  </script>
+</body>
 </html>
