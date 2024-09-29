@@ -11,6 +11,9 @@ pipeline {
         stage('Setup Virtual Environment') {
             steps {
                 sh '''
+                    
+                    sudo apt install python3.12-venv
+
                     # Create a virtual environment
                     python3 -m venv venv
 
