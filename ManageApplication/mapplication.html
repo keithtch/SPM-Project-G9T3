@@ -29,6 +29,7 @@
       <!-- Switcher Button between Manager & My View Mode -->
       <div class="text-end mb-3">
         <b-button 
+          v-if="role !==2 " 
           @click="toggleView" 
           class="btn btn-info"
         >
@@ -172,16 +173,17 @@
     new Vue({
       el: "#app",
       data: {
+        staffID: localStorage.getItem('staffID'),
+        manager: localStorage.getItem('Reporting_Manager'),
+        role: null,
+//-------------------------------------------------
+
         isManagerView: false, // used to toggle between views
         activeTab: "approved",
+        ApplicationArr: [],
         approvedApplications: [],
         pendingApplications: [],
         rejectedApplications: [],
-        dummyPendingApplications: [  // Dummy Data pls remove when u guys connect actual data
-          { Staff_ID: "001", Date_Applied: "2024-09-20", Time_Of_Day: "Morning", Status_Of_Application: "Pending", Reason: "Personal reasons" },
-          { Staff_ID: "002", Date_Applied: "2024-09-21", Time_Of_Day: "Afternoon", Status_Of_Application: "Pending", Reason: "Medical appointment" },
-          { Staff_ID: "003", Date_Applied: "2024-09-22", Time_Of_Day: "Full Day", Status_Of_Application: "Pending", Reason: "Family commitment" },
-        ],
         fields: [ // Dummy Data pls remove when u guys connect actual data
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Date_Applied", label: "Date Applied" },
@@ -212,9 +214,115 @@
           return this.isManagerView ? 'Manage Team WFH Applications' : 'Manage My WFH Applications';
         },
       },
+
+      mounted() {
+        this.getrole()
+        this.getapplications()
+      },
+
       methods: {
+
+        findId(id, arr) {
+          for (let i = 0; i < arr.length; i++) {
+            if (id == arr[i][0]) {
+              return i;
+            }
+          }
+          return 0;
+        },
+
+        getrole(){
+          fetch("http://localhost:5000/employee")
+            .then((response) => response.json())
+            .then((returnedJSON) => {
+              console.log(returnedJSON);
+              dataArr = returnedJSON.data;
+              staffInd = this.findId(this.staffID, dataArr)
+              this.role = dataArr[staffInd][8]
+              console.log(this.role)
+            })
+            .catch((error) => {
+              console.error("Error fetching data:", error);
+              this.isLoading = false;
+            });
+        },
+
+        getapplications(){
+          this.staffID = localStorage.getItem('staffID');
+          fetch('http://localhost:5000/employee')
+            .then(response => response.json())
+            .then(returnedJSON => {
+              dataArr = returnedJSON.data;
+              
+              staffInd = this.findId(this.staffID, dataArr);
+      
+              fetch('http://localhost:5001/application')
+                .then(response => response.json())
+                .then(returnedJSON => {
+                  this.ApplicationArr = returnedJSON.data;
+                  console.log(this.ApplicationArr)
+      
+                  for (entry of this.ApplicationArr) {
+                    if (entry[4] == 'Approved' && entry[0] == this.staffID) {
+                      const startDate = entry[1];
+                      const shift = entry[2];
+                      const status = entry[4];
+                      const reason = entry[5];
+      
+                      this.approvedApplications.push({
+                        Staff_ID: this.staffID,
+                        Date_Applied: startDate,
+                        Time_Of_Day: shift,
+                        Status_Of_Application: status,
+                        Reason: reason,
+                      })  
+                      console.log(this.approvedApplications)
+                    }
+                    else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
+                      const startDate = entry[1];
+                      const shift = entry[2];
+                      const status = entry[4];
+                      const reason = entry[5];
+      
+                      this.pendingApplications.push({
+                        Staff_ID: this.staffID,
+                        Date_Applied: startDate,
+                        Time_Of_Day: shift,
+                        Status_Of_Application: status,
+                        Reason: reason,
+                      })
+                      console.log(this.pendingApplications)
+
+                    }
+                    else if (entry[4] == 'Rejected' && entry[0] == this.staffID) {
+                      const startDate = entry[1];
+                      const shift = entry[2];
+                      const status = entry[4];
+                      const reason = entry[5];
+      
+                      this.rejectedApplications.push({
+                        Staff_ID: this.staffID,
+                        Date_Applied: startDate,
+                        Time_Of_Day: shift,
+                        Status_Of_Application: status,
+                        Reason: reason,
+                      })
+                      console.log(this.rejectedApplications)
+
+                    }
+                  }
+                });             
+            })
+            .catch(error => console.error('Error fetching data:', error));
+        },
+//------------------------------------------------------------
         toggleView() {
-          this.isManagerView = !this.isManagerView;
+          if(this.role=='2'){
+            this.isManagerView = False
+          }
+          else{
+            this.isManagerView = !this.isManagerView
+          }
         },
         setTab(tab) {
           this.activeTab = tab;
@@ -237,6 +345,9 @@
           this.closeRejectionModal();
         },
       },
+
+      
+
     });
   </script>
 </body>
