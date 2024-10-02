@@ -24,6 +24,7 @@ $(document).ready(function () {
       var boxContent = `
               <strong>${event.title}</strong><br>
               <em>${event.description}</em><br>
+              Status: ${event.status}<br>
               Shift: ${event.shift}<br>
               Location: ${event.location}<br>
               Reason: ${event.reason}
