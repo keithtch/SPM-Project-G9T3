@@ -86,13 +86,13 @@
         </b-card-header>
         <b-card-body>
           <b-table v-if="!isManagerView"
-            :items="pendingApplications"
+            :items="OwnpendingApplications"
             :fields="fields"
             responsive="sm"
           ></b-table>
           <div v-else>
             <b-table
-              :items="dummyPendingApplications"
+              :items="pendingApplications"
               :fields="managerFields"
               responsive="sm"
             >
@@ -113,7 +113,7 @@
         </b-card-header>
         <b-card-body>
           <b-table
-            :items="approvedApplications"
+            :items="OwnapprovedApplications"
             :fields="fields"
             responsive="sm"
           ></b-table>
@@ -127,7 +127,7 @@
         </b-card-header>
         <b-card-body>
           <b-table
-            :items="rejectedApplications"
+            :items="OwnrejectedApplications"
             :fields="fields"
             responsive="sm"
           ></b-table>
@@ -176,14 +176,23 @@
         staffID: localStorage.getItem('staffID'),
         manager: localStorage.getItem('Reporting_Manager'),
         role: null,
+        teamData: null,
 //-------------------------------------------------
 
         isManagerView: false, // used to toggle between views
         activeTab: "approved",
         ApplicationArr: [],
-        approvedApplications: [],
-        pendingApplications: [],
-        rejectedApplications: [],
+        OwnapprovedApplications: [],
+        OwnpendingApplications: [],
+        OwnrejectedApplications: [],
+        TeamapprovedApplications: [],
+        TeampendingApplications: [],
+        TeamrejectedApplications: [],
+        dummyPendingApplications: [  // Dummy Data pls remove when u guys connect actual data
+          { Staff_ID: "001", Date_Applied: "2024-09-20", Time_Of_Day: "Morning", Status_Of_Application: "Pending", Reason: "Personal reasons" },
+          { Staff_ID: "002", Date_Applied: "2024-09-21", Time_Of_Day: "Afternoon", Status_Of_Application: "Pending", Reason: "Medical appointment" },
+          { Staff_ID: "003", Date_Applied: "2024-09-22", Time_Of_Day: "Full Day", Status_Of_Application: "Pending", Reason: "Family commitment" },
+        ],
         fields: [ // Dummy Data pls remove when u guys connect actual data
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Date_Applied", label: "Date Applied" },
@@ -217,7 +226,10 @@
 
       mounted() {
         this.getrole()
-        this.getapplications()
+        this.getOwnApplications()
+        this.getteam()
+        //this.getTeamApplications()
+
       },
 
       methods: {
@@ -231,23 +243,35 @@
           return 0;
         },
 
-        getrole(){
-          fetch("http://localhost:5000/employee")
-            .then((response) => response.json())
-            .then((returnedJSON) => {
-              console.log(returnedJSON);
-              dataArr = returnedJSON.data;
-              staffInd = this.findId(this.staffID, dataArr)
-              this.role = dataArr[staffInd][8]
-              console.log(this.role)
-            })
-            .catch((error) => {
-              console.error("Error fetching data:", error);
-              this.isLoading = false;
-            });
+        async getrole() {
+          try {
+            const response = await fetch("http://localhost:5000/employee");
+            const returnedJSON = await response.json();
+            console.log(returnedJSON);
+            
+            const dataArr = returnedJSON.data;
+            const staffInd = this.findId(this.staffID, dataArr);
+        
+            this.role = dataArr[staffInd][8];
+            
+            console.log(this.role);
+          } catch (error) {
+            console.error("Error fetching data:", error);
+            this.isLoading = false;
+          }
+        },
+        
+
+        async getteam(){
+          const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
+          var teamResult = team.data.employees
+          //console.log(teamResult)
+
+          this.teamData = teamResult
+          console.log(this.teamData)
         },
 
-        getapplications(){
+        getOwnApplications(){
           this.staffID = localStorage.getItem('staffID');
           fetch('http://localhost:5000/employee')
             .then(response => response.json())
@@ -261,60 +285,62 @@
                 .then(returnedJSON => {
                   this.ApplicationArr = returnedJSON.data;
                   console.log(this.ApplicationArr)
-      
-                  for (entry of this.ApplicationArr) {
-                    if (entry[4] == 'Approved' && entry[0] == this.staffID) {
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-      
-                      this.approvedApplications.push({
-                        Staff_ID: this.staffID,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                      })  
-                      console.log(this.approvedApplications)
+                  
+                    for (entry of this.ApplicationArr) {
+                      if (entry[4] == 'Approved' && entry[0] == this.staffID) {
+                        const startDate = entry[1];
+                        const shift = entry[2];
+                        const status = entry[4];
+                        const reason = entry[5];
+        
+                        this.OwnapprovedApplications.push({
+                          Staff_ID: this.staffID,
+                          Date_Applied: startDate,
+                          Time_Of_Day: shift,
+                          Status_Of_Application: status,
+                          Reason: reason,
+                        })  
+                      }
+                      else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
+                        const startDate = entry[1];
+                        const shift = entry[2];
+                        const status = entry[4];
+                        const reason = entry[5];
+        
+                        this.OwnpendingApplications.push({
+                          Staff_ID: this.staffID,
+                          Date_Applied: startDate,
+                          Time_Of_Day: shift,
+                          Status_Of_Application: status,
+                          Reason: reason,
+                        })
+                      }
+                      else if (entry[4] == 'Rejected' && entry[0] == this.staffID) {
+                        const startDate = entry[1];
+                        const shift = entry[2];
+                        const status = entry[4];
+                        const reason = entry[5];
+        
+                        this.OwnrejectedApplications.push({
+                          Staff_ID: this.staffID,
+                          Date_Applied: startDate,
+                          Time_Of_Day: shift,
+                          Status_Of_Application: status,
+                          Reason: reason,
+                        })
+  
+                      }
                     }
-                    else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-      
-                      this.pendingApplications.push({
-                        Staff_ID: this.staffID,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                      })
-                      console.log(this.pendingApplications)
-
-                    }
-                    else if (entry[4] == 'Rejected' && entry[0] == this.staffID) {
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-      
-                      this.rejectedApplications.push({
-                        Staff_ID: this.staffID,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                      })
-                      console.log(this.rejectedApplications)
-
-                    }
-                  }
-                });             
+                  
+                }); 
+                console.log(this.OwnapprovedApplications)
+                console.log(this.OwnrejectedApplications)
+                console.log(this.OwnpendingApplications)            
             })
             .catch(error => console.error('Error fetching data:', error));
         },
+
+
 //------------------------------------------------------------
         toggleView() {
           if(this.role=='2'){
