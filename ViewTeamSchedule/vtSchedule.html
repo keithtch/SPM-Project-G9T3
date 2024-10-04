@@ -198,7 +198,7 @@
           async fetchTeams() {
             try {
               const response = await axios.get(
-                "http://localhost:5000/getTeamNames"
+                "https://spm-project-delta.vercel.app/getTeamNames"
               ); // Adjust the API endpoint as needed
               this.teams = response.data.teams; // Populate teams from API response
             } catch (error) {
@@ -235,7 +235,7 @@
                 }
                 // console.log(idArr)
                 // console.log(this.schedule)
-                const apps = await axios.post('http://localhost:5001/getApps', {ids: idArr,date: this.selectedDate, status: "Approved"})
+                const apps = await axios.post('https://spm-project-delta.vercel.app/getApps', {ids: idArr,date: this.selectedDate, status: "Approved"})
                 const applications = apps.data.results
                 // console.log(applications)
                 if (applications) {
@@ -321,7 +321,7 @@
           this.setDateLimits();
           this.updateInfo();
 
-          const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
+          const team = await axios.post('https://spm-project-delta.vercel.app/findTeam/' + this.staffID)
           var teamResult = team.data.employees
           console.log(teamResult)
 

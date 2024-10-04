@@ -64,14 +64,14 @@
     
       mounted() {
         this.staffID = localStorage.getItem('staffID');
-        fetch('http://localhost:5000/employee')
+        fetch('https://spm-project-delta.vercel.app/employee')
           .then(response => response.json())
           .then(returnedJSON => {
             dataArr = returnedJSON.data;
             
             staffInd = this.findId(this.staffID, dataArr);
     
-            fetch('http://localhost:5001/application')
+            fetch('https://spm-project-delta.vercel.app/application')
               .then(response => response.json())
               .then(returnedJSON => {
                 this.ApplicationArr = returnedJSON.data;
