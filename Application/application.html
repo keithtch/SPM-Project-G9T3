@@ -248,7 +248,7 @@
           this.wfhReason = ''
         },
         getDates() {
-          axios.post('http://localhost:5001/updateDates', { dates: this.dateArray })
+          axios.post('https://spm-project-delta.vercel.app/updateDates', { dates: this.dateArray })
           .then(response => {
             alert('Application Submitted!');
             console.log('Successfully posted to updateDates.');
