@@ -109,11 +109,11 @@
           id="reason"
           v-model="wfhReason"
           placeholder="Enter the reason for your WFH application (max 1000 characters)"
-          :maxlength="1000"
+          :maxlength="250"
           rows="3"
           required
         ></b-form-textarea>
-        <small>{{ 1000 - wfhReason.length }} characters remaining</small>
+        <small>{{ 250 - wfhReason.length }} characters remaining</small>
       </b-form-group>
 
       <div class="text-center mb-4">

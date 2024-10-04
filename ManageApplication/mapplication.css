@@ -47,3 +47,15 @@ body {
     padding: 30px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
+
+  .view-indicator {
+    height: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  .my-view {
+    background-color: #007bff; 
+  }
+  .manager-view {
+    background-color: #dc3545; 
+  }

@@ -18,17 +18,24 @@
 
   <body>
     <div id="app">
+      <!-- Loading spinner while data is being fetched -->
+      <div v-if="isLoading" class="loading-container">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
 
-
-      <!-- Digital Clock -->
-      <div id="clock" class="mt-5">
+      <!-- Digital Clock and Welcome Message -->
+      <div v-else id="clock" class="clock-container">
         <p class="date">{{ date }}</p>
         <p class="time">{{ time }}</p>
-        <p class="text">Welcome {{ userName }}! Manage your WFH with WFHMS!</p>
+        <h2 class="fade-in" :class="{ visible: userName }">
+          Welcome {{ userName }}! Manage your WFH with WFHMS!
+        </h2>
       </div>
 
       <!-- Button Section -->
-      <div class="container">
+      <div v-if="!isLoading" class="container">
         <div class="row text-center mt-4">
           <div class="col-md-6 mb-4">
             <button class="btn btn-success w-100 action-btn apply-btn" @click="applyWFH">
@@ -56,11 +63,28 @@
             </button>
           </div>
         </div>
-        
+      </div>
+
+      <!-- Notification Toast -->
+      <div class="toast-container">
+        <div
+          class="toast fade"
+          :class="{ show: showToast }"
+          role="alert"
+          aria-live="assertive"
+          aria-atomic="true"
+        >
+          <div class="toast-header">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong class="me-auto">Notification</strong>
+            <button type="button" class="btn-close" @click="hideToast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">{{ toastMessage }}</div>
+        </div>
       </div>
     </div>
 
-    <!-- External Libraries and Vue.js -->
+    <!-- External Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/vue@3.2.47/dist/vue.global.js"></script>
 
@@ -70,68 +94,108 @@
       createApp({
         data() {
           return {
+            isLoading: true,
             userName: "",
-            time: '',
-            date: '',
-            staffID: ''
+            time: "",
+            date: "",
+            staffID: "",
+            showToast: false, 
+            toastMessage: "", 
           };
         },
         mounted() {
           this.updateTime();
           setInterval(this.updateTime, 1000);
-          this.staffID = localStorage.getItem('staffID');
-          fetch('http://localhost:5000/employee')
-          .then(response => response.json())
-          .then(returnedJSON => {
-            console.log(returnedJSON);
-            //console.log(this.staffID);
-            dataArr = returnedJSON.data;
-            staffInd = this.findId(this.staffID,dataArr)
-            this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
-            report = dataArr[staffInd][7]
+
+          this.staffID = localStorage.getItem("staffID");
+          fetch("http://localhost:5000/employee")
+            .then((response) => response.json())
+            .then((returnedJSON) => {
+              console.log(returnedJSON);
+              // console.log(this.staffID);
+              dataArr = returnedJSON.data;
+              staffInd = this.findId(this.staffID, dataArr);
+              this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
+              report = dataArr[staffInd][7]; 
+              this.isLoading = false;
             // team = this.findTeam(report,dataArr)
             // console.log(team)
-          })
-          .catch(error => console.error('Error fetching data:', error));
+            })
+            .catch((error) => {
+              console.error("Error fetching data:", error);
+              this.isLoading = false;
+            });
         },
         methods: {
           applyWFH() {
-            alert("Redirecting to apply for Work From Home.");
-            window.location.href = "../Application/application.html";
+            this.showNotification("Auto Redirecting to apply for Work From Home.");
+            setTimeout(() => {
+              window.location.href = "../Application/application.html";
+            }, 1750); 
           },
           manageRequests() {
-            alert("Redirecting to manage applications.");
-            window.location.href = "../ManageApplication/mapplication.html";
+            this.showNotification("Auto Redirecting to manage applications.");
+            setTimeout(() => {
+              window.location.href = "../ManageApplication/mapplication.html";
+            }, 1750);
           },
           viewOwnSchedule() {
-            alert("Redirecting to view own schedule.");
-            window.location.href = "../ViewOwnSchedule/voSchedule.html";
+            this.showNotification("Auto Redirecting to view own schedule.");
+            setTimeout(() => {
+              window.location.href = "../ViewOwnSchedule/voSchedule.html";
+            }, 1750);
           },
           viewTeamSchedule() {
-            alert("Redirecting to view team schedule.");
-            window.location.href = "../ViewTeamSchedule/vtSchedule.html";
+            this.showNotification("Auto Redirecting to view team schedule.");
+            setTimeout(() => {
+              window.location.href = "../ViewTeamSchedule/vtSchedule.html";
+            }, 1750);
           },
           logOut() {
-            alert("Redirecting to Login Page.");
-            window.location.href = "../Login&Authentication/login.html";
+            this.showNotification("Logging out...");
+            setTimeout(() => {
+              window.location.href = "../Login&Authentication/login.html";
+            }, 1750);
+          },
+          showNotification(message) {
+            this.toastMessage = message;
+            this.showToast = true;
+            setTimeout(() => {
+              this.showToast = false;
+            }, 2000); 
+          },
+          hideToast() {
+            this.showToast = false;
           },
           updateTime() {
             const cd = new Date();
-            const week = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            this.time = this.zeroPadding(cd.getHours(), 2) + ':' + this.zeroPadding(cd.getMinutes(), 2) + ':' + this.zeroPadding(cd.getSeconds(), 2);
-            this.date = this.zeroPadding(cd.getFullYear(), 4) + '-' + this.zeroPadding(cd.getMonth() + 1, 2) + '-' + this.zeroPadding(cd.getDate(), 2) + ' ' + week[cd.getDay()];
+            const week = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+            this.time =
+              this.zeroPadding(cd.getHours(), 2) +
+              ":" +
+              this.zeroPadding(cd.getMinutes(), 2) +
+              ":" +
+              this.zeroPadding(cd.getSeconds(), 2);
+            this.date =
+              this.zeroPadding(cd.getFullYear(), 4) +
+              "-" +
+              this.zeroPadding(cd.getMonth() + 1, 2) +
+              "-" +
+              this.zeroPadding(cd.getDate(), 2) +
+              " " +
+              week[cd.getDay()];
           },
           zeroPadding(num, digit) {
-            return String(num).padStart(digit, '0');
+            return String(num).padStart(digit, "0");
           },
-          findId(id,arr) {
-                    for (let i = 0; i < arr.length; i++) {
-                        if (id == arr[i][0]) {
-                            return i
-                        }
-                    }
-                    return 0
-                },
+          findId(id, arr) {
+            for (let i = 0; i < arr.length; i++) {
+              if (id == arr[i][0]) {
+                return i;
+              }
+            }
+            return 0;
+          },
           findTeam(id,arr) {
               team_arr=[]
               for (let i = 0; i < arr.length; i++) {
@@ -140,11 +204,8 @@
                   }
               }
               return team_arr
-          },
-    
-    
-          
-        }
+          }
+        },
       }).mount("#app");
     </script>
   </body>

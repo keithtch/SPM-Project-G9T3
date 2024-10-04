@@ -68,7 +68,7 @@
           .then(response => response.json())
           .then(returnedJSON => {
             dataArr = returnedJSON.data;
-
+            
             staffInd = this.findId(this.staffID, dataArr);
     
             fetch('http://localhost:5001/application')
@@ -84,6 +84,7 @@
                     const member_role = dataArr[staffInd][4];
                     const startDate = entry[1];
                     const shift = entry[2];
+                    const status = entry[4];
                     const reason = entry[5];
     
                     let startTime, endTime;
@@ -102,6 +103,7 @@
                       title: `${member_Fname} ${member_Lname} (${member_role})`,
                       start: startTime,
                       end: endTime,
+                      status: status,
                       shift: shift,
                       description: `Work from home`,
                       location: `Home`,
@@ -116,6 +118,7 @@
                     const member_role = dataArr[staffInd][4];
                     const startDate = entry[1];
                     const shift = entry[2];
+                    const status = entry[4];
                     const reason = entry[5];
     
                     let startTime, endTime;
@@ -134,6 +137,7 @@
                       title: `${member_Fname} ${member_Lname} (${member_role})`,
                       start: startTime,
                       end: endTime,
+                      status: status,
                       shift: shift,
                       description: `Work from home`,
                       location: `Home`,
@@ -144,6 +148,8 @@
     
                 // Update the calendar after ScheduleArr is populated
                 this.updateCalendarEvents();
+                //console.log(this.AScheduleArr)
+                //console.log(this.PScheduleArr)
               });             
 
           })
