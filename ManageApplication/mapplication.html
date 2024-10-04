@@ -245,7 +245,7 @@
 
         async getrole() {
           try {
-            const response = await fetch("http://localhost:5000/employee");
+            const response = await fetch("https://spm-project-delta.vercel.app/employee");
             const returnedJSON = await response.json();
             console.log(returnedJSON);
             
@@ -263,7 +263,7 @@
         
 
         async getteam(){
-          const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
+          const team = await axios.post('https://spm-project-delta.vercel.app/findTeam/' + this.staffID)
           var teamResult = team.data.employees
           //console.log(teamResult)
 
@@ -273,14 +273,14 @@
 
         getOwnApplications(){
           this.staffID = localStorage.getItem('staffID');
-          fetch('http://localhost:5000/employee')
+          fetch('https://spm-project-delta.vercel.app/employee')
             .then(response => response.json())
             .then(returnedJSON => {
               dataArr = returnedJSON.data;
               
               staffInd = this.findId(this.staffID, dataArr);
       
-              fetch('http://localhost:5001/application')
+              fetch('https://spm-project-delta.vercel.app/application')
                 .then(response => response.json())
                 .then(returnedJSON => {
                   this.ApplicationArr = returnedJSON.data;
