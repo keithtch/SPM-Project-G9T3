@@ -9,6 +9,7 @@ CORS(app)
 
 load_dotenv('../.env')
 
+# Getting the database connection
 def get_db_connection():
     return pymysql.connect(
         host=os.environ.get('RDS_HOST'),
@@ -17,6 +18,7 @@ def get_db_connection():
         database= os.environ.get('RDS_DATABASE')
     )
 
+# When we run the application.py , auto connects to the database and returns the data from the Application table
 @app.route('/application')
 def apply():
     connection = get_db_connection()
@@ -27,7 +29,8 @@ def apply():
             return {'data': result}
     finally:
         connection.close()
-        
+
+
 @app.route('/updateDates',methods=['POST'])
 def updateDates():
     data = request.get_json()
@@ -47,7 +50,9 @@ def updateDates():
                 return jsonify({"status": "error", "message": "No dates received"}), 400
     finally:
         connection.close()
-    
+
+
+
 @app.route('/getApps',methods=['POST'])
 def getApps():
     data = request.get_json()
@@ -73,6 +78,8 @@ def getApps():
     finally:
         connection.close()
         
+        
+# retrieve the pending applications of the subordinates of the reporting manager   
 @app.route('/getPendingApplications', methods=['POST'])
 def getPendingApplications():
     data = request.get_json()
@@ -100,8 +107,74 @@ def getPendingApplications():
                 return jsonify({"status": "error", "message": "No pending applications found"}), 404
     finally:
         connection.close()
+        
+# Adding another route for getApproved and getRejected applications each
 
+# getApprovedApplications
+# 1. Same as getPendingApplications, but the status is 'Approved'
+# Retrieveing all the pening applications 
+@app.route('/getApprovedApplications', methods=['POST'])
+def getApprovedApplications():
+    data = request.get_json()
+    reporting_manager_id = data.get('staffID')  # staffID from the front-end
 
+    connection = get_db_connection() 
+    try:
+        with connection.cursor() as cursor:
+            # SQL Query: Join Employee and Application tables to get subordinates' pending applications
+            query = """
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                FROM Employee e
+                JOIN Application a ON e.Staff_ID = a.Staff_ID
+                WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
+                AND a.Status_Of_Application = 'Approved'
+            """
+            cursor.execute(query, (reporting_manager_id,))  # Pass the reporting manager's ID
+            results = cursor.fetchall()
+
+            if results:
+                return jsonify({"status": "success", "approvedApplications": results}), 200
+            elif len(results) == 0:
+                return jsonify({"status": "success", "approvedApplications": results}), 200
+            else:
+                return jsonify({"status": "error", "message": "No approved applications found"}), 404
+    finally:
+        connection.close()
+        
+    
+
+# getRejectedApplication
+# 1. Prompt a front end textbox to state reason 
+# 2. Once submitted, push to database 
+# 3. Under the Team Rejected Application tab, display the datbase rejected rows 
+@app.route('/getRejectedApplications', methods=['POST'])
+def getRejectedApplications():
+    data = request.get_json()
+    reporting_manager_id = data.get('staffID')
+    
+    connection = get_db_connection() 
+    try:
+        with connection.cursor() as cursor:
+            # SQL Query: Join Employee and Application tables to get subordinates' pending applications
+            query = """
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                FROM Employee e
+                JOIN Application a ON e.Staff_ID = a.Staff_ID
+                WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
+                AND a.Status_Of_Application = 'Rejected'
+            """
+            cursor.execute(query, (reporting_manager_id,))  # Pass the reporting manager's ID
+            results = cursor.fetchall()
+
+            if results:
+                return jsonify({"status": "success", "rejectedApplications": results}), 200
+            elif len(results) == 0:
+                return jsonify({"status": "success", "rejectedApplications": results}), 200
+            else:
+                return jsonify({"status": "error", "message": "No rejected applications found"}), 404
+    finally:
+        connection.close()
+        
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

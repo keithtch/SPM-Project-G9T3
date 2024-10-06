@@ -92,7 +92,7 @@
           ></b-table>
           <div v-else>
             <b-table
-              :items="pendingApplications"
+              :items="TeampendingApplications"
               :fields="managerFields"
               responsive="sm"
             >
@@ -112,11 +112,19 @@
           {{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table
+          <b-table v-if="!isManagerView"
             :items="OwnapprovedApplications"
             :fields="fields"
             responsive="sm"
           ></b-table>
+          <div v-else>
+            <b-table
+              :items="TeamapprovedApplications"
+              :fields="managerFields"
+              responsive="sm"
+            >
+            </b-table>
+          </div>
         </b-card-body>
       </b-card>
 
@@ -126,11 +134,19 @@
           {{ isManagerView ? 'Team Rejected Applications' : 'My Rejected Applications' }}
         </b-card-header>
         <b-card-body>
+          <b-table v-if="!isManagerView"
+          :items="OwnrejectedApplications"
+          :fields="fields"
+          responsive="sm"
+        ></b-table>
+        <div v-else>
           <b-table
-            :items="OwnrejectedApplications"
-            :fields="fields"
+            :items="TeamrejectedApplications"
+            :fields="managerFields"
             responsive="sm"
-          ></b-table>
+          >
+          </b-table>
+        </div>
         </b-card-body>
       </b-card>
 
@@ -206,7 +222,7 @@
           { key: "Time_Of_Day", label: "Time of Day" },
           { key: "Status_Of_Application", label: "Status" },
           { key: "Reason", label: "Reason" },
-          { key: "decision", label: "Decision" },
+          { key: "Decision", label: "Decision" },
         ],
         showRejectionModal: false,
         rejectionReason: '',
@@ -228,6 +244,8 @@
         this.getrole()
         this.getOwnApplications()
         this.getteam()
+        this.getApprovedApplications()
+        this.getRejectedApplications()
         //this.getTeamApplications()
 
       },
@@ -269,6 +287,80 @@
 
           this.teamData = teamResult
           console.log(this.teamData)
+        },
+
+        async getApprovedApplications() {
+          try {
+            const response = await axios.post('http://localhost:5001/getApprovedApplications', {
+              staffID: this.staffID  // send staffID in the request body as JSON
+            });
+            
+            if (response.data.status === 'success') {
+              console.log(response.data.approvedApplications);  // Log the actual pending applications
+              // Optionally, store the result in a data property for further use
+              // this.TeamapprovedApplications = response.data.approveApplications;
+              var tem_approved = response.data.approvedApplications
+              for (entry of tem_approved) {
+                const staffID = entry[0];
+                const startDate = entry[1];
+                const shift = entry[2];
+                const status = entry[3];
+                const reason = entry[4];
+                const decision = 'No Issue';
+
+  
+                this.TeamapprovedApplications.push({
+                  Staff_ID: staffID,
+                  Date_Applied: startDate,
+                  Time_Of_Day: shift,
+                  Status_Of_Application: status,
+                  Reason: reason,
+                  Decision : decision
+                })
+              }
+            } else {
+              console.error('Error:', response.data.message);
+            }
+          } catch (error) {
+            console.error('API call failed:', error);
+          }
+        },
+
+        async getRejectedApplications() {
+          try {
+            const response = await axios.post('http://localhost:5001/getRejectedApplications', {
+              staffID: this.staffID  // send staffID in the request body as JSON
+            });
+            
+            if (response.data.status === 'success') {
+              console.log(response.data.rejectedApplications);  // Log the actual pending applications
+              // Optionally, store the result in a data property for further use
+              // this.TeamapprovedApplications = response.data.approveApplications;
+              var tem_rejected = response.data.rejectedApplications
+              for (entry of tem_rejected) {
+                const staffID = entry[0];
+                const startDate = entry[1];
+                const shift = entry[2];
+                const status = entry[3];
+                const reason = entry[4];
+                const decision = 'No Issue';
+
+  
+                this.TeamrejectedApplications.push({
+                  Staff_ID: staffID,
+                  Date_Applied: startDate,
+                  Time_Of_Day: shift,
+                  Status_Of_Application: status,
+                  Reason: reason,
+                  Decision : decision
+                })
+              }
+            } else {
+              console.error('Error:', response.data.message);
+            }
+          } catch (error) {
+            console.error('API call failed:', error);
+          }
         },
 
         getOwnApplications(){
