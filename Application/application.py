@@ -174,6 +174,35 @@ def getRejectedApplications():
                 return jsonify({"status": "error", "message": "No rejected applications found"}), 404
     finally:
         connection.close()
+
+
+# Once the manager approves the application, the status of the application will be updated to 'Approved'      
+@app.route('/approveApplication', methods=['POST'])
+def approveApplication():
+    data = request.get_json()
+    staff_id = data.get('Staff_ID')
+    date_applied = data.get('Date_Applied')
+    time_of_day = data.get('Time_Of_Day')
+
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                UPDATE Application
+                SET Status_Of_Application = 'Approved'
+                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+            """
+            cursor.execute(query, (staff_id, date_applied, time_of_day))
+            connection.commit()
+            return jsonify({"status": "success", "message": "Application approved"}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"status": "error", "message": "Failed to approve application"}), 500
+    finally:
+        connection.close()       
+
+            
+   
         
 
 if __name__ == '__main__':
