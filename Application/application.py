@@ -199,7 +199,33 @@ def approveApplication():
         print(e)
         return jsonify({"status": "error", "message": "Failed to approve application"}), 500
     finally:
-        connection.close()       
+        connection.close()   
+        
+# Once the manager rejects the application, the status of the application will be updated to 'Rejected'
+@app.route('/rejectApplication', methods=['POST'])
+def rejectApplication():
+    data = request.get_json()
+    staff_id = data.get('Staff_ID')
+    date_applied = data.get('Date_Applied')
+    time_of_day = data.get('Time_Of_Day')
+    reason = data.get('Reason')
+
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                UPDATE Application
+                SET Status_Of_Application = 'Rejected', Reason = %s
+                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+            """
+            cursor.execute(query, (reason, staff_id, date_applied, time_of_day))
+            connection.commit()
+            return jsonify({"status": "success", "message": "Application rejected"}), 200
+    except Exception as e:
+        print(e)
+        return jsonify({"status": "error", "message": "Failed to reject application"}), 500
+    finally:
+        connection.close() 
 
             
    
