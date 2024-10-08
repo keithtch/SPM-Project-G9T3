@@ -186,8 +186,10 @@
           { key: "Reason", label: "Reason" },
           { key: "Decision", label: "Decision" },
         ],
+        // Below 3 for rejectionmodel 
         showRejectionModal: false,
         rejectionReason: '',
+        selectedItem: null,
         selectedDate: null,
         totalNumberInTeam: 50, // Dummy Data pls remove when u guys connect actual data
         totalInOffice: 30, // Dummy Data pls remove when u guys connect actual data
@@ -487,13 +489,44 @@
         },
         openRejectionModal(item) {
           this.showRejectionModal = true;  // If manager reject, this leads to the pop out
+          this.selectedItem = item;
         },
         closeRejectionModal() {
           this.showRejectionModal = false;
           this.rejectionReason = '';
+          // Set it back to default
+          this.selectedItem = null;
         },
-        submitRejection() {
+        async submitRejection() {
           // Logic for submitting rejection reason -> this one will manage the rejection of pending requests, prolly is sql here also?
+          try {
+            const response = await axios.post('http://localhost:5001/rejectApplication', {
+              Staff_ID: this.selectedItem.Staff_ID,
+              Date_Applied: this.selectedItem.Date_Applied,
+              Time_Of_Day: this.selectedItem.Time_Of_Day,
+              Rejection_Reason: this.rejectionReason,
+            });
+            if (response.data.status === 'success') {
+              // Remove the rejected application from the pending list
+              this.TeampendingApplications = this.TeampendingApplications.filter(
+                app => !(app.Staff_ID === this.selectedItem.Staff_ID && app.Date_Applied === this.selectedItem.Date_Applied && app.Time_Of_Day === this.selectedItem.Time_Of_Day)
+              );
+              // Add it to the rejected applications list
+              this.TeamrejectedApplications.push({
+                ...this.selectedItem,
+                Status_Of_Application: 'Rejected',
+                Decision: this.rejectionReason, // Set the rejection reason
+              });
+              // Close the modal
+              this.closeRejectionModal();
+            } else {
+              console.error('Error:', response.data.message);
+              alert('Failed to reject application: ' + response.data.message);
+            }
+          } catch (error) {
+            console.error('API call failed:', error);
+            alert('An error occurred while rejecting the application.');
+          }
           this.closeRejectionModal();
         },
       },
