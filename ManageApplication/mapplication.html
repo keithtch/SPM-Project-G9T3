@@ -155,8 +155,7 @@
         manager: localStorage.getItem('Reporting_Manager'),
         role: null,
         teamData: null,
-        //-------------------------------------------------
-
+        dataArr: null,
         isManagerView: false, // used to toggle between views
         activeTab: "approved",
         ApplicationArr: [],
@@ -172,14 +171,14 @@
           { Staff_ID: "003", Date_Applied: "2024-09-22", Time_Of_Day: "Full Day", Status_Of_Application: "Pending", Reason: "Family commitment" },
         ],
         fields: [ // Dummy Data pls remove when u guys connect actual data
-          { key: "Staff_ID", label: "Staff ID" },
+          { key: "Staff_Name", label: "Staff Name" },
           { key: "Date_Applied", label: "Date Applied" },
           { key: "Time_Of_Day", label: "Time of Day" },
           { key: "Status_Of_Application", label: "Status" },
           { key: "Reason", label: "Reason" },
         ],
         managerFields: [ // Dummy Data pls remove when u guys connect actual data
-          { key: "Staff_ID", label: "Staff ID" },
+          { key: "Staff_Name", label: "Staff Name" },
           { key: "Date_Applied", label: "Date Applied" },
           { key: "Time_Of_Day", label: "Time of Day" },
           { key: "Status_Of_Application", label: "Status" },
@@ -204,8 +203,10 @@
         },
       },
 
-      mounted() {
-        this.getrole()
+      async mounted() {
+        try{
+          await this.getrole()
+        
         this.getOwnApplications()
         this.getteam()
         this.getApprovedApplications()
@@ -215,8 +216,9 @@
         // this.approveApplication()
         // this.rejectApplication()
         //this.getTeamApplications()
-
-      },
+      }catch (error){
+        console.error('Error during mounted execution',error)
+      }},
 
       methods: {
 
@@ -235,10 +237,11 @@
             const returnedJSON = await response.json();
             console.log(returnedJSON);
 
-            const dataArr = returnedJSON.data;
-            const staffInd = this.findId(this.staffID, dataArr);
+            this.dataArr = returnedJSON.data;
 
-            this.role = dataArr[staffInd][8];
+            const staffInd = this.findId(this.staffID, this.dataArr);
+
+            this.role = this.dataArr[staffInd][8];
 
             console.log(this.role);
           } catch (error) {
@@ -272,6 +275,8 @@
               var tem_pending = response.data.pendingApplications
               for (entry of tem_pending) {
                 const staffID = entry[0];
+                const staffInd = this.findId(staffID, this.dataArr);
+                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                 const startDate = entry[1];
                 const shift = entry[2];
                 const status = entry[3];
@@ -280,15 +285,16 @@
 
 
                 this.TeampendingApplications.push({
-                  Staff_ID: staffID,
+                  Staff_Name: staffName,
                   Date_Applied: startDate,
                   Time_Of_Day: shift,
                   Status_Of_Application: status,
                   Reason: reason,
                   Decision: decision
                 })
-                console.log(this.TeampendingApplications)
               }
+              console.log(this.TeampendingApplications)
+
             } else {
               console.error('Error:', response.data.message);
             }
@@ -310,6 +316,8 @@
               var tem_approved = response.data.approvedApplications
               for (entry of tem_approved) {
                 const staffID = entry[0];
+                const staffInd = this.findId(staffID, this.dataArr);
+                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                 const startDate = entry[1];
                 const shift = entry[2];
                 const status = entry[3];
@@ -318,7 +326,7 @@
 
 
                 this.TeamapprovedApplications.push({
-                  Staff_ID: staffID,
+                  Staff_Name: staffName,
                   Date_Applied: startDate,
                   Time_Of_Day: shift,
                   Status_Of_Application: status,
@@ -347,6 +355,8 @@
               var tem_rejected = response.data.rejectedApplications
               for (entry of tem_rejected) {
                 const staffID = entry[0];
+                const staffInd = this.findId(staffID, this.dataArr);
+                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                 const startDate = entry[1];
                 const shift = entry[2];
                 const status = entry[3];
@@ -355,7 +365,7 @@
 
 
                 this.TeamrejectedApplications.push({
-                  Staff_ID: staffID,
+                  Staff_Name: staffName,
                   Date_Applied: startDate,
                   Time_Of_Day: shift,
                   Status_Of_Application: status,
@@ -390,13 +400,15 @@
 
                   for (entry of this.ApplicationArr) {
                     if (entry[4] == 'Approved' && entry[0] == this.staffID) {
+                      const staffInd = this.findId(this.staffID, this.dataArr);
+                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                       const startDate = entry[1];
                       const shift = entry[2];
                       const status = entry[4];
                       const reason = entry[5];
 
                       this.OwnapprovedApplications.push({
-                        Staff_ID: this.staffID,
+                        Staff_Name: staffName,
                         Date_Applied: startDate,
                         Time_Of_Day: shift,
                         Status_Of_Application: status,
@@ -404,13 +416,15 @@
                       })
                     }
                     else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
+                      const staffInd = this.findId(this.staffID, this.dataArr);
+                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                       const startDate = entry[1];
                       const shift = entry[2];
                       const status = entry[4];
                       const reason = entry[5];
 
                       this.OwnpendingApplications.push({
-                        Staff_ID: this.staffID,
+                        Staff_Name: this.staffName,
                         Date_Applied: startDate,
                         Time_Of_Day: shift,
                         Status_Of_Application: status,
@@ -418,13 +432,15 @@
                       })
                     }
                     else if (entry[4] == 'Rejected' && entry[0] == this.staffID) {
+                      const staffInd = this.findId(this.staffID, this.dataArr);
+                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
                       const startDate = entry[1];
                       const shift = entry[2];
                       const status = entry[4];
                       const reason = entry[5];
 
                       this.OwnrejectedApplications.push({
-                        Staff_ID: this.staffID,
+                        Staff_Name: this.staffName,
                         Date_Applied: startDate,
                         Time_Of_Day: shift,
                         Status_Of_Application: status,
