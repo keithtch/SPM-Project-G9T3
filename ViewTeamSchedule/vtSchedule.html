@@ -230,8 +230,10 @@
                 var idArr = []
                 var tempEmp = {}
                 for (employee of this.teamData[this.selectedTeam]) {
-                  idArr.push(employee[0])
-                  tempEmp[employee[0]] = {role:employee[4],name:employee[1]+ " " + employee[2]}
+                  if (employee[0] != parseInt(this.staffID)) {
+                    idArr.push(employee[0])
+                    tempEmp[employee[0]] = {role:employee[4],name:employee[1]+ " " + employee[2]}
+                  }
                 }
                 // console.log(idArr)
                 // console.log(this.schedule)
