@@ -68,9 +68,9 @@
           {{ isManagerView ? 'Team Pending Applications' : 'My Pending Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table v-if="!isManagerView" :items="OwnpendingApplications" :fields="fields" responsive="sm"></b-table>
+          <b-table v-if="!isManagerView" :items="OwnpendingApplications" :fields="pendingFields" responsive="sm"></b-table>
           <div v-else>
-            <b-table :items="TeampendingApplications" :fields="managerFields" responsive="sm">
+            <b-table :items="TeampendingApplications" :fields="fields" responsive="sm">
               <!-- Changing the decision from 'decision' to "Decision" to try -->
               <template v-slot:cell(Decision)="data">
                 <b-button variant="success" @click="approve(data.item)">Approve</b-button>
@@ -90,7 +90,7 @@
         <b-card-body>
           <b-table v-if="!isManagerView" :items="OwnapprovedApplications" :fields="fields" responsive="sm"></b-table>
           <div v-else>
-            <b-table :items="TeamapprovedApplications" :fields="managerFields" responsive="sm">
+            <b-table :items="TeamapprovedApplications" :fields="fields" responsive="sm">
             </b-table>
           </div>
         </b-card-body>
@@ -104,7 +104,7 @@
         <b-card-body>
           <b-table v-if="!isManagerView" :items="OwnrejectedApplications" :fields="fields" responsive="sm"></b-table>
           <div v-else>
-            <b-table :items="TeamrejectedApplications" :fields="managerFields" responsive="sm">
+            <b-table :items="TeamrejectedApplications" :fields="fields" responsive="sm">
             </b-table>
           </div>
         </b-card-body>
@@ -170,20 +170,20 @@
           { Staff_ID: "002", Date_Applied: "2024-09-21", Time_Of_Day: "Afternoon", Status_Of_Application: "Pending", Reason: "Medical appointment" },
           { Staff_ID: "003", Date_Applied: "2024-09-22", Time_Of_Day: "Full Day", Status_Of_Application: "Pending", Reason: "Family commitment" },
         ],
-        fields: [ // Dummy Data pls remove when u guys connect actual data
-          { key: "Staff_Name", label: "Staff Name" },
-          { key: "Date_Applied", label: "Date Applied" },
-          { key: "Time_Of_Day", label: "Time of Day" },
-          { key: "Status_Of_Application", label: "Status" },
-          { key: "Reason", label: "Reason" },
-        ],
-        managerFields: [ // Dummy Data pls remove when u guys connect actual data
+        fields: [ 
           { key: "Staff_Name", label: "Staff Name" },
           { key: "Date_Applied", label: "Date Applied" },
           { key: "Time_Of_Day", label: "Time of Day" },
           { key: "Status_Of_Application", label: "Status" },
           { key: "Reason", label: "Reason" },
           { key: "Decision", label: "Decision" },
+        ],
+        pendingFields: [
+          { key: "Staff_Name", label: "Staff Name" },
+          { key: "Date_Applied", label: "Date Applied" },
+          { key: "Time_Of_Day", label: "Time of Day" },
+          { key: "Status_Of_Application", label: "Status" },
+          { key: "Reason", label: "Reason" },
         ],
         // Below 3 for rejectionmodel 
         showRejectionModal: false,
@@ -362,8 +362,7 @@
                 const shift = entry[2];
                 const status = entry[3];
                 const reason = entry[4];
-                const decision = 'No Issue';
-
+                const decision = entry[5];
 
                 this.TeamrejectedApplications.push({
                   Staff_Name: staffName,
@@ -407,6 +406,7 @@
                       const shift = entry[2];
                       const status = entry[4];
                       const reason = entry[5];
+                      const decision = 'No Issue'
 
                       this.OwnapprovedApplications.push({
                         Staff_Name: staffName,
@@ -414,6 +414,7 @@
                         Time_Of_Day: shift,
                         Status_Of_Application: status,
                         Reason: reason,
+                        Decision: decision,
                       })
                     }
                     else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
@@ -439,6 +440,7 @@
                       const shift = entry[2];
                       const status = entry[4];
                       const reason = entry[5];
+                      const decision = entry[6]
 
                       this.OwnrejectedApplications.push({
                         Staff_Name: staffName,
@@ -446,6 +448,7 @@
                         Time_Of_Day: shift,
                         Status_Of_Application: status,
                         Reason: reason,
+                        Decision: decision
                       })
 
                     }

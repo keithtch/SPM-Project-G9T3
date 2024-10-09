@@ -157,7 +157,7 @@ def getRejectedApplications():
         with connection.cursor() as cursor:
             # SQL Query: Join Employee and Application tables to get subordinates' pending applications
             query = """
-                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason, a.Manager_Reason
                 FROM Employee e
                 JOIN Application a ON e.Staff_ID = a.Staff_ID
                 WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
@@ -215,7 +215,7 @@ def rejectApplication():
         with connection.cursor() as cursor:
             query = """
                 UPDATE Application
-                SET Status_Of_Application = 'Rejected', Reason = %s
+                SET Status_Of_Application = 'Rejected', Manager_Reason = %s
                 WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
             """
             cursor.execute(query, (rejection_reason, staff_id, date_applied, time_of_day))
