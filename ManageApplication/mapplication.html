@@ -285,6 +285,7 @@
 
 
                 this.TeampendingApplications.push({
+                  Staff_ID: staffID,
                   Staff_Name: staffName,
                   Date_Applied: startDate,
                   Time_Of_Day: shift,
@@ -477,6 +478,7 @@
         async approve(item) {
           // Use this to manage the approval of pending requests, prolly is sql here?
           try {
+            console.log(item.Staff_ID, item.Date_Applied, item.Time_Of_Day)
             const response = await axios.post('http://localhost:5001/approveApplication', {
               Staff_ID: item.Staff_ID,
               Date_Applied: item.Date_Applied,
