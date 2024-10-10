@@ -44,7 +44,7 @@
         <b-card-header>Select Date for Team Statistics</b-card-header>
         <b-card-body>
           <b-form-group label="Choose a date:">
-            <b-datepicker v-model="selectedDate" class="mb-3"></b-datepicker>
+            <b-datepicker v-model="selectedDate" class="mb-3" @input="updateStats"></b-datepicker>
           </b-form-group>
 
           <div class="mb-2">
@@ -165,6 +165,7 @@
         TeamapprovedApplications: [],
         TeampendingApplications: [],
         TeamrejectedApplications: [],
+        dateSortedApproved:{},
         dummyPendingApplications: [  // Dummy Data pls remove when u guys connect actual data
           { Staff_ID: "001", Date_Applied: "2024-09-20", Time_Of_Day: "Morning", Status_Of_Application: "Pending", Reason: "Personal reasons" },
           { Staff_ID: "002", Date_Applied: "2024-09-21", Time_Of_Day: "Afternoon", Status_Of_Application: "Pending", Reason: "Medical appointment" },
@@ -190,9 +191,9 @@
         rejectionReason: '',
         selectedItem: null,
         selectedDate: null,
-        totalNumberInTeam: 50, // Dummy Data pls remove when u guys connect actual data
-        totalInOffice: 30, // Dummy Data pls remove when u guys connect actual data
-        totalWFH: 20, // Dummy Data pls remove when u guys connect actual data
+        totalNumberInTeam: '', // Dummy Data pls remove when u guys connect actual data
+        totalInOffice: '', // Dummy Data pls remove when u guys connect actual data
+        totalWFH: '', // Dummy Data pls remove when u guys connect actual data
       },
       computed: {
         percentageWFH() {
@@ -254,10 +255,16 @@
         async getteam() {
           const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
           var teamResult = team.data.employees
-          //console.log(teamResult)
-
           this.teamData = teamResult
           console.log(this.teamData)
+          resLen = Object.keys(this.teamData).length
+          if (resLen > 1) {
+            this.totalNumberInTeam = resLen
+          } else {
+            for (const [key,value] of Object.entries(this.teamData)) {
+              this.totalNumberInTeam = value.length
+            }
+          }
         },
 
         async getPendingApplications() {
@@ -282,7 +289,6 @@
                 const status = entry[3];
                 const reason = entry[4];
                 const decision = entry[5];
-
 
                 this.TeampendingApplications.push({
                   Staff_ID: staffID,
@@ -315,6 +321,7 @@
               // Optionally, store the result in a data property for further use
               // this.TeamapprovedApplications = response.data.approveApplications;
               var tem_approved = response.data.approvedApplications
+              var tempApproveCount = {}
               for (entry of tem_approved) {
                 const staffID = entry[0];
                 const staffInd = this.findId(staffID, this.dataArr);
@@ -325,6 +332,13 @@
                 const reason = entry[4];
                 const decision = 'No Issue';
 
+                if (!tempApproveCount[startDate]) {
+                  tempApproveCount[startDate] = {}
+                }
+
+                if (!tempApproveCount[startDate][staffID]) {
+                  tempApproveCount[startDate][staffID] = 1
+                }
 
                 this.TeamapprovedApplications.push({
                   Staff_Name: staffName,
@@ -335,6 +349,12 @@
                   Decision: decision
                 })
               }
+              console.log(tempApproveCount)
+              for (const [key,value] of Object.entries(tempApproveCount)) {
+                console.log(key,value)
+                this.dateSortedApproved[key] = Object.keys(value).length
+              }
+              console.log(this.dateSortedApproved)
             } else {
               console.error('Error:', response.data.message);
             }
@@ -460,6 +480,14 @@
               console.log(this.OwnpendingApplications)
             })
             .catch(error => console.error('Error fetching data:', error));
+        },
+        updateStats() {
+          console.log('updating...')
+          if (this.dateSortedApproved[this.selectedDate]) {
+            this.totalWFH = this.dateSortedApproved[this.selectedDate]
+            this.totalInOffice = this.totalNumberInTeam - this.totalWFH
+            // this.percentageWFH = (this.totalWFH/this.totalInOffice).toFixed(2)
+          }
         },
 
 
