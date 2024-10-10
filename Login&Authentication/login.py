@@ -68,7 +68,9 @@ def findTeam(id):
                 print(staff)
             # elif role == 3:
             #     cursor.execute("SELECT * FROM Employee WHERE Reporting_Manager = %s", (id))
-            elif role == 1 or role == 3:
+            else:
+                if role == 1:
+                    id = 130002
                 cursor.execute("SELECT * FROM Employee")
                 allStaff = cursor.fetchall()
                 allStaff = [list(row) for row in allStaff]
@@ -82,6 +84,7 @@ def findTeam(id):
                             if employee[8] == 1 or employee[8] == 3:
                                 queue.append(employee[0])
                             staff[teamNames[tempID]].append(employee)
+                print('test!!',staff.values())
 
             return {'employees':staff}
     finally:
