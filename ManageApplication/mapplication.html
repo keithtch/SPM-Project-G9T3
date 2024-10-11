@@ -186,6 +186,7 @@
           { key: "Status_Of_Application", label: "Status" },
           { key: "Reason", label: "Reason" },
         ],
+        tempApproveCount: {},
         // Below 3 for rejectionmodel 
         showRejectionModal: false,
         rejectionReason: '',
@@ -321,7 +322,6 @@
               // Optionally, store the result in a data property for further use
               // this.TeamapprovedApplications = response.data.approveApplications;
               var tem_approved = response.data.approvedApplications
-              var tempApproveCount = {}
               for (entry of tem_approved) {
                 const staffID = entry[0];
                 const staffInd = this.findId(staffID, this.dataArr);
@@ -332,12 +332,12 @@
                 const reason = entry[4];
                 const decision = 'No Issue';
 
-                if (!tempApproveCount[startDate]) {
-                  tempApproveCount[startDate] = {}
+                if (!this.tempApproveCount[startDate]) {
+                  this.tempApproveCount[startDate] = {}
                 }
 
-                if (!tempApproveCount[startDate][staffID]) {
-                  tempApproveCount[startDate][staffID] = 1
+                if (!this.tempApproveCount[startDate][staffID]) {
+                  this.tempApproveCount[startDate][staffID] = 1
                 }
 
                 this.TeamapprovedApplications.push({
@@ -349,8 +349,8 @@
                   Decision: decision
                 })
               }
-              console.log(tempApproveCount)
-              for (const [key,value] of Object.entries(tempApproveCount)) {
+              console.log(this.tempApproveCount)
+              for (const [key,value] of Object.entries(this.tempApproveCount)) {
                 console.log(key,value)
                 this.dateSortedApproved[key] = Object.keys(value).length
               }
@@ -509,6 +509,15 @@
         async approve(item) {
           // Use this to manage the approval of pending requests, prolly is sql here?
           try {
+            if (this.tempApproveCount[item.Date_Applied]) {
+              if (!(item.Staff_ID in this.tempApproveCount[item.Date_Applied])) {
+                var percentWFH = (this.dateSortedApproved[item.Date_Applied]+1)/this.totalNumberInTeam
+                if (percentWFH > 0.5) {
+                  alert("Quota exceeded")
+                  return
+                }
+              }
+            }
             console.log(item.Staff_ID, item.Date_Applied, item.Time_Of_Day)
             const response = await axios.post('http://localhost:5001/approveApplication', {
               Staff_ID: item.Staff_ID,
