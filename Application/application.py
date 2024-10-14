@@ -3,6 +3,8 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import pymysql
 import os
+import amqp_connection
+import os, sys
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +19,17 @@ def get_db_connection():
         password=os.environ.get('RDS_PASSWORD'),
         database= os.environ.get('RDS_DATABASE')
     )
+    
+# AMQP Connection
+exchangename = "requests"
+exchangetype = "topic"
+connection = amqp_connection.create_connection() 
+channel = connection.channel()
+#if the exchange is not yet created, exit the program
+if not amqp_connection.check_exchange(channel, exchangename, exchangetype):
+    print("\nCreate the 'Exchange' before running this microservice. \nExiting the program.")
+    sys.exit(0)
+    # Exit with a success status
 
 # When we run the application.py , auto connects to the database and returns the data from the Application table
 @app.route('/application')
