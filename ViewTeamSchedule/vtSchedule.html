@@ -165,7 +165,9 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-    <script>
+    <script type="module">
+      import { setDateLimits } from './dateBoundaryUtils.js';
+
       new Vue({
         el: "#app",
         data: {
@@ -229,7 +231,7 @@
               try {
                 var idArr = []
                 var tempEmp = {}
-                for (employee of this.teamData[this.selectedTeam]) {
+                for (let employee of this.teamData[this.selectedTeam]) {
                   if (employee[0] != parseInt(this.staffID)) {
                     idArr.push(employee[0])
                     tempEmp[employee[0]] = {role:employee[4],name:employee[1]+ " " + employee[2]}
@@ -254,7 +256,7 @@
                       }
                     }
                   }
-                for (key in tempEmp) {
+                for (let key in tempEmp) {
                   this.schedule.office.fullDay.push(tempEmp[key])
                 }
                 
@@ -279,7 +281,7 @@
 
           setStatus() {
             console.log(this.totalWFH)
-            totalMembers = this.totalMembers
+            let totalMembers = this.totalMembers
             if (totalMembers === 0) {
               this.statusMessage = "No team members.";
               this.statusClass = "text-muted";
@@ -303,18 +305,9 @@
           },
           setDateLimits() {
             const today = new Date();
-
-            // Calculate two months back
-            const minDate = new Date();
-            minDate.setMonth(today.getMonth() - 2);
-
-            // Calculate three months forward
-            const maxDate = new Date();
-            maxDate.setMonth(today.getMonth() + 3);
-
-            // Format the dates to YYYY-MM-DD
-            this.minDate = minDate.toISOString().split("T")[0];
-            this.maxDate = maxDate.toISOString().split("T")[0];
+            const { minDate, maxDate } = setDateLimits(today);
+            this.minDate = minDate;
+            this.maxDate = maxDate;
           },
         },
         async mounted() {

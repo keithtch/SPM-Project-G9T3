@@ -1,0 +1,18 @@
+{
+  "name": "spm-project-g9t3",
+  "version": "1.0.0",
+  "description": "SMU IS212 Scrum Project - G9T3 - AY24-25 T1",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/preset-env": "^7.25.8",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0"
+  }
+}
