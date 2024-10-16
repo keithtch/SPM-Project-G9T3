@@ -3,8 +3,10 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 import pymysql
 import os
-# import amqp_connection
-import os, sys
+import smtplib
+import ssl
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 app = Flask(__name__)
 CORS(app)
@@ -19,17 +21,6 @@ def get_db_connection():
         password=os.environ.get('RDS_PASSWORD'),
         database= os.environ.get('RDS_DATABASE')
     )
-    
-# # AMQP Connection
-# exchangename = "requests"
-# exchangetype = "topic"
-# connection = amqp_connection.create_connection() 
-# channel = connection.channel()
-# #if the exchange is not yet created, exit the program
-# if not amqp_connection.check_exchange(channel, exchangename, exchangetype):
-#     print("\nCreate the 'Exchange' before running this microservice. \nExiting the program.")
-#     sys.exit(0)
-    # Exit with a success status
 
 # When we run the application.py , auto connects to the database and returns the data from the Application table
 @app.route('/application')
@@ -190,6 +181,7 @@ def getRejectedApplications():
 
 
 # Once the manager approves the application, the status of the application will be updated to 'Approved'      
+# AMQP send message to exchange to publish message upon manager's approval
 @app.route('/approveApplication', methods=['POST'])
 def approveApplication():
     data = request.get_json()
@@ -207,6 +199,55 @@ def approveApplication():
             """
             cursor.execute(query, (staff_id, date_applied, time_of_day))
             connection.commit()
+            
+           
+            # Retrieve the employee's email address
+            cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
+            result = cursor.fetchone()
+            if result:
+                email = result[0]
+            else:
+                email = None  # Handle the case where the email is not found
+            print(email)
+             # Prepare the email content
+            subject = "Your WFH Application has been Approved"
+            body = f"""Dear Employee,
+
+            Your WFH application for {date_applied} ({time_of_day}) has been approved.
+
+            Best regards,
+            Management
+            """
+            # Send the email
+            if email:
+                try:
+                    # Set up the email sender credentials
+                    email_sender = os.environ.get('EMAIL_SENDER')
+                    email_password = os.environ.get('EMAIL_PASSWORD')
+
+                    # Create a multipart message
+                    msg = MIMEMultipart()
+                    msg['From'] = email_sender
+                    msg['To'] = email
+                    msg['Subject'] = subject
+
+                    # Attach the email body to the message
+                    msg.attach(MIMEText(body, 'plain'))
+
+                    # Set up the secure SSL context and SMTP server
+                    context = ssl.create_default_context()
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+                        server.login(email_sender, email_password)
+                        server.sendmail(email_sender, email, msg.as_string())
+
+                    print(f"Email sent to {email}")
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+            else:
+                print("Employee email not found; cannot send email.")            
+            
+            
+            
             return jsonify({"status": "success", "message": "Application approved"}), 200
     except Exception as e:
         print(e)
@@ -233,6 +274,56 @@ def rejectApplication():
             """
             cursor.execute(query, (rejection_reason, staff_id, date_applied, time_of_day))
             connection.commit()
+            
+             # Retrieve the employee's email address
+            cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
+            result = cursor.fetchone()
+            if result:
+                email = result[0]
+            else:
+                email = None  # Handle the case where the email is not found
+            print(email)
+             # Prepare the email content
+            subject = "Your WFH Application has been Rejected"
+            body = f"""Dear Employee,
+
+            Your WFH application for {date_applied} ({time_of_day}) has been rejected.
+            
+            Reason : {rejection_reason}.
+
+            Best regards,
+            Management
+            """
+            # Send the email
+            if email:
+                try:
+                    # Set up the email sender credentials
+                    email_sender = os.environ.get('EMAIL_SENDER')
+                    email_password = os.environ.get('EMAIL_PASSWORD')
+
+                    # Create a multipart message
+                    msg = MIMEMultipart()
+                    msg['From'] = email_sender
+                    msg['To'] = email
+                    msg['Subject'] = subject
+
+                    # Attach the email body to the message
+                    msg.attach(MIMEText(body, 'plain'))
+
+                    # Set up the secure SSL context and SMTP server
+                    context = ssl.create_default_context()
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+                        server.login(email_sender, email_password)
+                        server.sendmail(email_sender, email, msg.as_string())
+
+                    print(f"Email sent to {email}")
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+            else:
+                print("Employee email not found; cannot send email.")   
+            
+            
+            
             return jsonify({"status": "success", "message": "Application rejected"}), 200
     except Exception as e:
         print(e)
