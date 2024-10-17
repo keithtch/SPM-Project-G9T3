@@ -243,7 +243,7 @@
                 const applications = apps.data.results
                 // console.log(applications)
                 if (applications) {
-                  for (app of applications) {
+                  for (var app of applications) {
                     this.totalWFH ++
                     if (app[2] == "AM") {
                       this.schedule.wfh.AM.push(tempEmp[app[0]])
@@ -308,6 +308,7 @@
             const { minDate, maxDate } = setDateLimits(today);
             this.minDate = minDate;
             this.maxDate = maxDate;
+            console.log(this.minDate,this.maxDate)
           },
         },
         async mounted() {
