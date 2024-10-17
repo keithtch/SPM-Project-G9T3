@@ -32,11 +32,23 @@
           id="team"
           v-model="selectedTeam"
           class="form-control"
+          v-if="!deptFlag"
         >
           <option v-for="(employees, teamName) in teamData" :key="team" :value="teamName">
             {{ teamName }}'s Team
           </option>
+
         </select>
+        <select
+        id="dept"
+        v-model="selectedDept"
+        class="form-control"
+        v-if="deptFlag"
+        >
+        <option v-for="(employees, deptName) in deptData" :key="dept" :value="deptName">
+          {{ deptName }}
+        </option>
+      </select>
       </div>
       
       <!-- Button to trigger updateInfo method -->
@@ -184,14 +196,17 @@
           teams: {}, // Populated from the API /getTeamsNames that hasnt been created
           selectedTeam: "",
           selectedDate: "",
+          selectedDept: "",
           flag: false,
           teamData: null,
+          deptData:{HR:'asdasd',SOEMTHINGA:'asdasd'},
           statusMessage: "",
           statusClass: "",
           minDate: "",
           maxDate: "",
           totalMembers: "",
           totalWFH: 0,
+          deptFlag: false,
           schedule:{
                     office:{
                       AM: [],
