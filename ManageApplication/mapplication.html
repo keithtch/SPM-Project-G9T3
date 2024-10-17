@@ -99,6 +99,9 @@
           </b-table>
           <div v-else>
             <b-table :items="TeamapprovedApplications" :fields="fields" responsive="sm">
+              <template v-slot:cell(Withdraw)="data">
+              <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+            </template>
             </b-table>
           </div>
         </b-card-body>
@@ -112,7 +115,7 @@
         <b-card-body>
           <b-table v-if="!isManagerView" :items="OwnrejectedApplications" :fields="fieldsr" responsive="sm"></b-table>
           <div v-else>
-            <b-table :items="TeamrejectedApplications" :fields="fields" responsive="sm">
+            <b-table :items="TeamrejectedApplications" :fields="fieldsr" responsive="sm">
             </b-table>
           </div>
         </b-card-body>
@@ -369,7 +372,7 @@
               }
               console.log(this.tempApproveCount)
               for (const [key,value] of Object.entries(this.tempApproveCount)) {
-                console.log(key,value)
+                <!-- console.log(key,value) -->
                 this.dateSortedApproved[key] = Object.keys(value).length
               }
               console.log(this.dateSortedApproved)
