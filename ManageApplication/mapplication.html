@@ -24,7 +24,7 @@
 
       <!-- Switcher Button between Manager & My View Mode -->
       <div class="text-end mb-3">
-        <b-button v-if="role !==2 " @click="toggleView" class="btn btn-info">
+        <b-button v-if="role !==2" @click="toggleView" class="btn btn-info">
           {{ isManagerView ? 'Switch to My View' : 'Switch to Manager View' }}
         </b-button>
       </div>
@@ -68,13 +68,13 @@
           {{ isManagerView ? 'Team Pending Applications' : 'My Pending Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table v-if="!isManagerView" :items="OwnpendingApplications" :fields="pendingFields" responsive="sm">
+          <b-table v-if="!isManagerView" :items="ownApplications['Pending']" :fields="pendingFields" responsive="sm">
             <template v-slot:cell(Withdraw)="data">
               <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
           </b-table>
           <div v-else>
-            <b-table :items="TeampendingApplications" :fields="fieldsr" responsive="sm">
+            <b-table :items="teamApplications['Pending']" :fields="fieldsr" responsive="sm">
               <!-- Changing the decision from 'decision' to "Decision" to try -->
               <template v-slot:cell(Decision)="data">
                 <b-button variant="success" @click="approve(data.item)">Approve</b-button>
@@ -92,13 +92,13 @@
           {{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table v-if="!isManagerView" :items="OwnapprovedApplications" :fields="fields" responsive="sm">
+          <b-table v-if="!isManagerView" :items="ownApplications['Approved']" :fields="fields" responsive="sm">
             <template v-slot:cell(Withdraw)="data">
               <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
           </b-table>
           <div v-else>
-            <b-table :items="TeamapprovedApplications" :fields="fields" responsive="sm">
+            <b-table :items="teamApplications['Approved']" :fields="fields" responsive="sm">
               <template v-slot:cell(Withdraw)="data">
               <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
@@ -113,9 +113,9 @@
           {{ isManagerView ? 'Team Rejected Applications' : 'My Rejected Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table v-if="!isManagerView" :items="OwnrejectedApplications" :fields="fieldsr" responsive="sm"></b-table>
+          <b-table v-if="!isManagerView" :items="ownApplications['Rejected']" :fields="fieldsr" responsive="sm"></b-table>
           <div v-else>
-            <b-table :items="TeamrejectedApplications" :fields="fieldsr" responsive="sm">
+            <b-table :items="teamApplications['Rejected']" :fields="fieldsr" responsive="sm">
             </b-table>
           </div>
         </b-card-body>
@@ -164,18 +164,14 @@
       data: {
         staffID: localStorage.getItem('staffID'),
         manager: localStorage.getItem('Reporting_Manager'),
-        role: null,
+        role: 2,
         teamData: null,
         dataArr: null,
         isManagerView: false, // used to toggle between views
         activeTab: "approved",
         ApplicationArr: [],
-        OwnapprovedApplications: [],
-        OwnpendingApplications: [],
-        OwnrejectedApplications: [],
-        TeamapprovedApplications: [],
-        TeampendingApplications: [],
-        TeamrejectedApplications: [],
+        teamApplications: {'Approved':[],'Pending':[],'Rejected':[]},
+        ownApplications: {'Approved':[],'Pending':[],'Rejected':[]},
         dateSortedApproved:{},
 
         fields: [ 
@@ -212,9 +208,9 @@
         rejectionReason: '',
         selectedItem: null,
         selectedDate: null,
-        totalNumberInTeam: '', // Dummy Data pls remove when u guys connect actual data
-        totalInOffice: '', // Dummy Data pls remove when u guys connect actual data
-        totalWFH: '', // Dummy Data pls remove when u guys connect actual data
+        totalNumberInTeam: '', 
+        totalInOffice: '', 
+        totalWFH: '', 
       },
       computed: {
         percentageWFH() {
@@ -231,13 +227,7 @@
         
         this.getOwnApplications()
         this.getteam()
-        this.getApprovedApplications()
-        this.getRejectedApplications()
-        this.getPendingApplications()
-        // Dk if need to mount or not; just trial and error 
-        // this.approveApplication()
-        // this.rejectApplication()
-        //this.getTeamApplications()
+        this.getTeamApplications()
       }catch (error){
         console.error('Error during mounted execution',error)
       }},
@@ -287,95 +277,50 @@
             }
           }
         },
-
-        async getPendingApplications() {
+        async getTeamApplications() {
           try {
-            const response = await axios.post('http://localhost:5001/getPendingApplications', {
+            var response = await axios.post('http://localhost:5001/getTeamApplications', {
               staffID: this.staffID  // send staffID in the request body as JSON
             });
-
+            
+            
             if (response.data.status === 'success') {
-              console.log(response.data.pendingApplications);  // Log the actual pending applications
+              console.log(response.data.Applications);  // Log the actual pending applications
               // Optionally, store the result in a data property for further use
               // this.TeampendingApplications = response.data.pendingApplications;
 
               // Try to see if there is a need to clear the array first
-              var tem_pending = response.data.pendingApplications
-              for (entry of tem_pending) {
-                const staffID = entry[0];
-                const staffInd = this.findId(staffID, this.dataArr);
-                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                const startDate = entry[1];
-                const shift = entry[2];
-                const status = entry[3];
-                const reason = entry[4];
-                const decision = entry[5];
-
-                this.TeampendingApplications.push({
+              var apps = response.data.Applications
+              for (entry of apps) {
+                const staffID = entry[0]
+                const staffInd = this.findId(staffID, this.dataArr)
+                const startDate = entry[1]
+                this.teamApplications[entry[3]].push({
                   Staff_ID: staffID,
-                  Staff_Name: staffName,
+                  Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
                   Date_Applied: startDate,
-                  Time_Of_Day: shift,
-                  Status_Of_Application: status,
-                  Reason: reason,
-                  Decision: decision
+                  Time_Of_Day: entry[2],
+                  Status_Of_Application: entry[3],
+                  Reason: entry[4],
+                  Decision: entry[5]
                 })
-              }
-              console.log(this.TeampendingApplications)
+                if (entry[3] == 'Approved') {
+                  if (!this.tempApproveCount[startDate]) {
+                    this.tempApproveCount[startDate] = {}
+                  }
 
-            } else {
-              console.error('Error:', response.data.message);
-            }
-          } catch (error) {
-            console.error('API call failed:', error);
-          }
-        },
+                  if (!this.tempApproveCount[startDate][staffID]) {
+                    this.tempApproveCount[startDate][staffID] = 1
+                  }
 
-        async getApprovedApplications() {
-          try {
-            const response = await axios.post('http://localhost:5001/getApprovedApplications', {
-              staffID: this.staffID  // send staffID in the request body as JSON
-            });
-
-            if (response.data.status === 'success') {
-              console.log(response.data.approvedApplications);  // Log the actual pending applications
-              // Optionally, store the result in a data property for further use
-              // this.TeamapprovedApplications = response.data.approveApplications;
-              var tem_approved = response.data.approvedApplications
-              for (entry of tem_approved) {
-                const staffID = entry[0];
-                const staffInd = this.findId(staffID, this.dataArr);
-                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                const startDate = entry[1];
-                const shift = entry[2];
-                const status = entry[3];
-                const reason = entry[4];
-                const decision = 'No Issue';
-
-                if (!this.tempApproveCount[startDate]) {
-                  this.tempApproveCount[startDate] = {}
+                  for (const [key,value] of Object.entries(this.tempApproveCount)) {
+                    this.dateSortedApproved[key] = Object.keys(value).length
+                  }
+                  console.log(this.dateSortedApproved)
                 }
-
-                if (!this.tempApproveCount[startDate][staffID]) {
-                  this.tempApproveCount[startDate][staffID] = 1
-                }
-
-                this.TeamapprovedApplications.push({
-                  Staff_ID: staffID,
-                  Staff_Name: staffName,
-                  Date_Applied: startDate,
-                  Time_Of_Day: shift,
-                  Status_Of_Application: status,
-                  Reason: reason,
-                  Decision: decision
-                })
               }
-              console.log(this.tempApproveCount)
-              for (const [key,value] of Object.entries(this.tempApproveCount)) {
-                <!-- console.log(key,value) -->
-                this.dateSortedApproved[key] = Object.keys(value).length
-              }
-              console.log(this.dateSortedApproved)
+              console.log(this.teamApplications)
+
             } else {
               console.error('Error:', response.data.message);
             }
@@ -383,47 +328,6 @@
             console.error('API call failed:', error);
           }
         },
-
-        async getRejectedApplications() {
-          try {
-            const response = await axios.post('http://localhost:5001/getRejectedApplications', {
-              staffID: this.staffID  // send staffID in the request body as JSON
-            });
-
-            if (response.data.status === 'success') {
-              console.log(response.data.rejectedApplications);  // Log the actual pending applications
-              // Optionally, store the result in a data property for further use
-              // this.TeamapprovedApplications = response.data.approveApplications;
-              var tem_rejected = response.data.rejectedApplications
-              for (entry of tem_rejected) {
-                const staffID = entry[0];
-                const staffInd = this.findId(staffID, this.dataArr);
-                const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                const startDate = entry[1];
-                const shift = entry[2];
-                const status = entry[3];
-                const reason = entry[4];
-                const decision = entry[5];
-
-                this.TeamrejectedApplications.push({
-                  Staff_ID: staffID,
-                  Staff_Name: staffName,
-                  Date_Applied: startDate,
-                  Time_Of_Day: shift,
-                  Status_Of_Application: status,
-                  Reason: reason,
-                  Decision: decision
-                })
-              }
-            } else {
-              console.error('Error:', response.data.message);
-            }
-          } catch (error) {
-            console.error('API call failed:', error);
-          }
-        },
-
-
 
         getOwnApplications() {
           this.staffID = localStorage.getItem('staffID');
@@ -441,68 +345,21 @@
                   console.log(this.ApplicationArr)
 
                   for (entry of this.ApplicationArr) {
-                    if (entry[4] == 'Approved' && entry[0] == this.staffID) {
+                    if (entry[0] == this.staffID) {
                       const staffInd = this.findId(this.staffID, this.dataArr);
-                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-                      const decision = 'No Issue'
 
-                      this.OwnapprovedApplications.push({
+                      this.ownApplications[entry[4]].push({
                         Staff_ID: this.staffID,
-                        Staff_Name: staffName,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                        Decision: decision,
+                        Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
+                        Date_Applied: entry[1],
+                        Time_Of_Day: entry[2],
+                        Status_Of_Application: entry[4],
+                        Reason: entry[5],
+                        Decision: 'No Issue'
                       })
-                    }
-                    else if (entry[4] == 'Pending' && entry[0] == this.staffID) {
-                      const staffInd = this.findId(this.staffID, this.dataArr);
-                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-
-                      this.OwnpendingApplications.push({
-                        Staff_ID: this.staffID,
-                        Staff_Name: staffName,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                      })
-                    }
-                    else if (entry[4] == 'Rejected' && entry[0] == this.staffID) {
-                      const staffInd = this.findId(this.staffID, this.dataArr);
-                      const staffName = this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2];
-                      const startDate = entry[1];
-                      const shift = entry[2];
-                      const status = entry[4];
-                      const reason = entry[5];
-                      const decision = entry[6]
-
-                      this.OwnrejectedApplications.push({
-                        Staff_ID: this.staffID,
-                        Staff_Name: staffName,
-                        Date_Applied: startDate,
-                        Time_Of_Day: shift,
-                        Status_Of_Application: status,
-                        Reason: reason,
-                        Decision: decision
-                      })
-
                     }
                   }
-
                 });
-              console.log(this.OwnapprovedApplications)
-              console.log(this.OwnrejectedApplications)
-              console.log(this.OwnpendingApplications)
             })
             .catch(error => console.error('Error fetching data:', error));
         },
@@ -512,6 +369,9 @@
             this.totalWFH = this.dateSortedApproved[this.selectedDate]
             this.totalInOffice = this.totalNumberInTeam - this.totalWFH
             // this.percentageWFH = (this.totalWFH/this.totalInOffice).toFixed(2)
+          } else {
+            this.totalWFH = 0
+            this.totalInOffice = this.totalNumberInTeam
           }
         },
 
@@ -549,11 +409,11 @@
             });
             if (response.data.status === 'success') {
               // Remove the approved application from the pending list
-              this.TeampendingApplications = this.TeampendingApplications.filter(
+              this.teamApplications['Pending'] = this.teamApplications['Pending'].filter(
                 app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
               );
               // Optionally, add it to the approved applications list
-              this.TeamapprovedApplications.push({
+              this.teamApplications['Approved'].push({
                 ...item,
                 Status_Of_Application: 'Approved',
                 Decision: 'No Issue'
@@ -589,11 +449,11 @@
             });
             if (response.data.status === 'success') {
               // Remove the rejected application from the pending list
-              this.TeampendingApplications = this.TeampendingApplications.filter(
+              this.teamApplications['Pending'] = this.teamApplications['Pending'].filter(
                 app => !(app.Staff_ID === this.selectedItem.Staff_ID && app.Date_Applied === this.selectedItem.Date_Applied && app.Time_Of_Day === this.selectedItem.Time_Of_Day)
               );
               // Add it to the rejected applications list
-              this.TeamrejectedApplications.push({
+              this.teamApplications['Rejected'].push({
                 ...this.selectedItem,
                 Status_Of_Application: 'Rejected',
                 Decision: this.rejectionReason, // Set the rejection reason
@@ -634,7 +494,7 @@
               });
               console.log(response)
               if (response.data.status === 'success') {
-                this.OwnpendingApplications = this.OwnpendingApplications.filter(
+                this.ownApplications['Pending'] = this.ownApplications['Pending'].filter(
                 app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
               );
                 alert('Application withdrawn successfully.');

@@ -82,7 +82,32 @@ def getApps():
     finally:
         connection.close()
         
-        
+@app.route('/getTeamApplications', methods=['POST'])
+def getTeamApplications():
+    data = request.get_json()
+    reporting_manager_id = data.get('staffID')  # staffID from the front-end
+    connection = get_db_connection() 
+    try:
+        with connection.cursor() as cursor:
+            # SQL Query: Join Employee and Application tables to get subordinates' applications
+            query = """
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                FROM Employee e
+                JOIN Application a ON e.Staff_ID = a.Staff_ID
+                WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
+            """
+            cursor.execute(query, (reporting_manager_id,))  # Pass the reporting manager's ID
+            results = cursor.fetchall()
+
+            if results:
+                return jsonify({"status": "success", "Applications": results}), 200
+            elif len(results) == 0:
+                return jsonify({"status": "success", "Applications": results}), 200
+            else:
+                return jsonify({"status": "error", "message": "No applications found"}), 404
+    finally:
+        connection.close()
+
 # retrieve the pending applications of the subordinates of the reporting manager   
 @app.route('/getPendingApplications', methods=['POST'])
 def getPendingApplications():
