@@ -1,4 +1,19 @@
+import { setDateLimits } from '../ViewTeamSchedule/dateBoundaryUtils.js';
+
 $(document).ready(function () {
+  // Calculate date limits
+  const today = new Date();
+  const { minDate, maxDate } = setDateLimits(today);
+  console.log(minDate);
+  console.log(maxDate);
+
+  // Add one day to maxDate coz validRange below removes one day
+  const maxDateObj = new Date(maxDate);
+  maxDateObj.setDate(maxDateObj.getDate() + 1);
+  const updatedMaxDate = maxDateObj.toISOString().split("T")[0];
+  console.log(minDate);
+  console.log(updatedMaxDate); // Updated max date
+
   // Initialize the calendar
   $("#calendar").fullCalendar({
     // Calendar options
@@ -10,10 +25,10 @@ $(document).ready(function () {
     defaultView: "month",
     editable: true,
 
-    // Limit view to 2 months back and 3 months ahead
+    // Set the valid date range
     validRange: {
-      start: moment().subtract(2, "months").format("YYYY-MM-DD"),
-      end: moment().add(3, "months").format("YYYY-MM-DD"),
+      start: minDate,
+      end: updatedMaxDate, 
     },
 
     // Events will be dynamically populated by Vue
