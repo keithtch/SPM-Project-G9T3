@@ -224,10 +224,9 @@
       async mounted() {
         try{
           await this.getrole()
-        
-        this.getOwnApplications()
-        this.getteam()
-        this.getTeamApplications()
+          this.getOwnApplications()
+          this.getteam()
+          this.getTeamApplications()
       }catch (error){
         console.error('Error during mounted execution',error)
       }},
@@ -331,37 +330,30 @@
 
         getOwnApplications() {
           this.staffID = localStorage.getItem('staffID');
-          fetch('http://localhost:5000/employee')
+          staffInd = this.findId(this.staffID, this.dataArr);
+
+          fetch('http://localhost:5001/application')
             .then(response => response.json())
             .then(returnedJSON => {
-              dataArr = returnedJSON.data;
+              this.ApplicationArr = returnedJSON.data;
+              console.log(this.ApplicationArr)
 
-              staffInd = this.findId(this.staffID, dataArr);
+              for (entry of this.ApplicationArr) {
+                if (entry[0] == this.staffID) {
+                  const staffInd = this.findId(this.staffID, this.dataArr);
 
-              fetch('http://localhost:5001/application')
-                .then(response => response.json())
-                .then(returnedJSON => {
-                  this.ApplicationArr = returnedJSON.data;
-                  console.log(this.ApplicationArr)
-
-                  for (entry of this.ApplicationArr) {
-                    if (entry[0] == this.staffID) {
-                      const staffInd = this.findId(this.staffID, this.dataArr);
-
-                      this.ownApplications[entry[4]].push({
-                        Staff_ID: this.staffID,
-                        Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
-                        Date_Applied: entry[1],
-                        Time_Of_Day: entry[2],
-                        Status_Of_Application: entry[4],
-                        Reason: entry[5],
-                        Decision: 'No Issue'
-                      })
-                    }
-                  }
-                });
-            })
-            .catch(error => console.error('Error fetching data:', error));
+                  this.ownApplications[entry[4]].push({
+                    Staff_ID: this.staffID,
+                    Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
+                    Date_Applied: entry[1],
+                    Time_Of_Day: entry[2],
+                    Status_Of_Application: entry[4],
+                    Reason: entry[5],
+                    Decision: 'No Issue'
+                  })
+                }
+              }
+            });
         },
         updateStats() {
           console.log('updating...')
