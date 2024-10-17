@@ -20,21 +20,17 @@
           type="date"
           id="date"
           v-model="selectedDate"
-          @change="updateInfo"
           :min="minDate"
           :max="maxDate"
           class="form-control"
         />
       </div>
-
+      
       <div class="mb-4">
-        <label for="team" class="form-label"
-          >Select a team's schedule to view:</label
-        >
+        <label for="team" class="form-label">Select a team's schedule to view:</label>
         <select
           id="team"
           v-model="selectedTeam"
-          @change="updateInfo"
           class="form-control"
         >
           <option v-for="(employees, teamName) in teamData" :key="team" :value="teamName">
@@ -42,6 +38,18 @@
           </option>
         </select>
       </div>
+      
+      <!-- Button to trigger updateInfo method -->
+      <div class="mb-4 d-flex justify-content-center">
+        <button
+          class="btn btn-success"
+          @click="updateInfo"
+          :disabled="flag"
+        >
+          Generate Team Information
+        </button>
+      </div>
+      
       <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
       <!-- Team Data Section -->
       <div class="card" v-if="teamData">
@@ -176,6 +184,7 @@
           teams: {}, // Populated from the API /getTeamsNames that hasnt been created
           selectedTeam: "",
           selectedDate: "",
+          flag: false,
           teamData: null,
           statusMessage: "",
           statusClass: "",
@@ -213,6 +222,7 @@
           // Fetching team data based on selected team and date
           async updateInfo() {
             console.log('test')
+            this.flag = true
             if (this.selectedTeam && this.selectedDate) {
               this.totalMembers = this.teamData[this.selectedTeam].length
 
@@ -277,6 +287,7 @@
               this.statusMessage = "Please select both a team and a date.";
               this.statusClass = "text-warning";
             }
+            this.flag = false;
           },
 
           setStatus() {
