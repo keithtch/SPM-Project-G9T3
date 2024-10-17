@@ -179,6 +179,49 @@ def getRejectedApplications():
     finally:
         connection.close()
 
+# Withdrawing the pending application and logging it
+# this will delete the application from the application db and log it in the log db
+
+@app.route('/withdrawPendingApplication', methods=['POST'])
+def withdrawApplication():
+    data = request.get_json()
+    staff_id = data.get('Staff_ID')
+    date_applied = data.get('Date_Applied')
+    time_of_day = data.get('Time_Of_Day')
+    reason = data.get('Reason') 
+    managerid = find_manager(staff_id)
+
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # Step 1: Delete the pending application from the Application table
+            delete_query = """
+                DELETE FROM Application
+                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+                AND Status_Of_Application = 'Pending'
+            """
+            cursor.execute(delete_query, (staff_id, date_applied, time_of_day))
+            connection.commit()
+            print('i did this part')
+
+            # Step 2: Log the withdrawal in the Log table
+            log_query = """
+                INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
+                VALUES (%s, %s, %s, %s, %s , %s)
+            """
+            cursor.execute(log_query, (staff_id, date_applied, time_of_day, managerid,'Withdrawn', reason))
+            connection.commit()
+            print('i did this part')
+
+
+            return jsonify({"status": "success", "message": "Application withdrawn and logged"}), 200
+    except Exception as e:
+        print(f"Error withdrawing application: {e}")
+        return jsonify({"status": "error", "message": "Failed to withdraw application"}), 500
+    finally:
+        connection.close()
+
+
 
 # Once the manager approves the application, the status of the application will be updated to 'Approved'      
 # AMQP send message to exchange to publish message upon manager's approval
@@ -330,6 +373,27 @@ def rejectApplication():
         return jsonify({"status": "error", "message": "Failed to reject application"}), 500
     finally:
         connection.close()
+        
+        
+def find_manager(id):
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Employee")
+            result = cursor.fetchall()
+            staffind = findid(id,result)
+            managerid = result[staffind][7]
+            return managerid
+    finally:
+        connection.close()
+        
+def findid(id,arr):
+    for i in range(len(arr)):
+        if id==arr[i][0]:
+            return i
+    
+    return 0
+
 
 
             
