@@ -12,7 +12,7 @@
   </head>
   <body class="bg-light">
     <div id="app" class="container mt-5">
-      <h1 class="text-center mb-4">Team Schedule</h1>
+      <h1 class="text-center mb-4">{{filter}} Schedule</h1>
 
       <div class="mb-4">
         <label for="date" class="form-label">Select a date:</label>
@@ -66,7 +66,7 @@
             class="btn btn-secondary ml-3"
             @click="toggleScheduleView"
           >
-            Switch to {{ deptFlag ? 'Team' : 'Department' }}
+            Filter by {{ deptFlag ? 'Team' : 'Department' }}
           </button>
         </div>
       </div>
@@ -78,7 +78,7 @@
           @click="updateInfo"
           :disabled="flag"
         >
-          Generate Team Information
+          Generate {{filter}} Information
         </button>
       </div>
 
@@ -86,10 +86,10 @@
       <!-- Team Data Section -->
       <div class="card" v-if="teamData">
         <div class="card-body">
-          <h5 class="card-title text-center">Team Information</h5>
-          <p><strong>Team Name:</strong> {{ selectedTeam }}</p>
+          <h5 class="card-title text-center">{{filter}} Information</h5>
+          <p><strong>{{filter}} Name:</strong> {{ currSelected }}</p>
           <p>
-            <strong>Total Team Members:</strong> {{ totalMembers }}
+            <strong>Total {{filter}} Members:</strong> {{ totalMembers }}
           </p>
           <hr />
           <!-- Staff Working in Office -->
@@ -213,6 +213,8 @@
           selectedTeam: "",
           selectedDate: "",
           selectedDept: "",
+          currSelected: "",
+          filter: "Team",
           flag: false,
           teamData: null,
           deptData: { ZimingHRnerds: 'asdasd', ZimingHRveryNerds: 'asdasd' },
@@ -240,27 +242,22 @@
           toggleScheduleView() {
             this.deptFlag = !this.deptFlag;
           },
-          // Fetch Team Names from the API 'getTeamNames'
-          async fetchTeams() {
-            try {
-              const response = await axios.get(
-                "http://localhost:5000/getTeamNames"
-              ); // Adjust the API endpoint as needed
-              this.teams = response.data.teams; // Populate teams from API response
-            } catch (error) {
-              console.error("Error fetching teams:", error);
-              this.statusMessage =
-                "Unable to load team names. Please try again later.";
-              this.statusClass = "text-danger";
-            }
-          },
           // Fetching team data based on selected team and date
           async updateInfo() {
             console.log('test')
             this.flag = true
-            if (this.selectedTeam && this.selectedDate) {
-              this.totalMembers = this.teamData[this.selectedTeam].length
-
+            if ((this.selectedTeam && this.selectedDate && !this.deptFlag) || (this.selectedDept && this.selectedDate && this.deptFlag)) {
+              if (this.deptFlag) {
+                this.filter="Department"
+                var currData = this.deptData
+                var selected = this.selectedDept
+              } else {
+                this.filter="Team"
+                var currData = this.teamData
+                var selected = this.selectedTeam
+              }
+              this.totalMembers = currData[selected].length
+              this.currSelected = selected
               this.schedule= {
                     office:{
                       AM: [],
@@ -276,7 +273,7 @@
               try {
                 var idArr = []
                 var tempEmp = {}
-                for (let employee of this.teamData[this.selectedTeam]) {
+                for (let employee of currData[selected]) {
                   if (employee[0] != parseInt(this.staffID)) {
                     idArr.push(employee[0])
                     tempEmp[employee[0]] = {role:employee[4],name:employee[1]+ " " + employee[2]}
@@ -314,11 +311,14 @@
                 this.statusClass = "text-danger";
               }
             } else {
-              if (this.selectedTeam) {
+              if (this.selectedTeam && !this.deptFlag) {
                 this.totalMembers = this.teamData[this.selectedTeam].length
+                this.currSelected = this.selectedTeam
                 console.log(this.teamData)
+              } else if (this.selectedDept && this.deptFlag) {
+                this.totalMembers = this.deptData[this.selectedDept].length
+                this.currSelected = this.selectedDept
               }
-              // this.teamData = [];
               this.statusMessage = "Please select both a team and a date.";
               this.statusClass = "text-warning";
             }
@@ -358,8 +358,6 @@
           },
         },
         async mounted() {
-          // await this.fetchTeams();
-
           this.setDateLimits();
           this.updateInfo();
 
@@ -368,7 +366,8 @@
           console.log(teamResult)
 
           this.teamData = teamResult
-          
+          this.deptData = team.data.dept
+          console.log(this.deptData)
 
         },
       });

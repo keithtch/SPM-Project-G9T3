@@ -52,6 +52,8 @@ def findTeam(id):
     print(id)
     queue = []
     staff = {}
+    dept = {}
+    deptDone = False
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
@@ -78,6 +80,13 @@ def findTeam(id):
                 while len(queue)>0:
                     tempID = int(queue.pop())
                     for employee in allStaff:
+                        if employee[0] != 130002:
+                            if employee[3] not in dept.keys():
+                                dept[employee[3]] = []
+                            if employee not in dept[employee[3]]:
+                                dept[employee[3]].append(employee)
+
+
                         if (int(employee[7]) == tempID and (employee not in staff.values()) and (employee[0] != employee[7])):
                             if teamNames[tempID] not in staff:
                                 staff[teamNames[tempID]] = []
@@ -86,7 +95,16 @@ def findTeam(id):
                             staff[teamNames[tempID]].append(employee)
                 print('test!!',staff.values())
 
-            return {'employees':staff}
+            return {'employees':staff, 'dept':dept}
+    finally:
+        connection.close()
+
+@app.route('/findDept', methods=['POST'])
+def findDept():
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Employee")
     finally:
         connection.close()
 
