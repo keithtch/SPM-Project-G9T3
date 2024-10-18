@@ -25,32 +25,52 @@
           class="form-control"
         />
       </div>
-      
-      <div class="mb-4">
-        <label for="team" class="form-label">Select a team's schedule to view:</label>
-        <select
-          id="team"
-          v-model="selectedTeam"
-          class="form-control"
-          v-if="!deptFlag"
-        >
-          <option v-for="(employees, teamName) in teamData" :key="team" :value="teamName">
-            {{ teamName }}'s Team
-          </option>
 
-        </select>
-        <select
-        id="dept"
-        v-model="selectedDept"
-        class="form-control"
-        v-if="deptFlag"
-        >
-        <option v-for="(employees, deptName) in deptData" :key="dept" :value="deptName">
-          {{ deptName }}
-        </option>
-      </select>
+      <div class="mb-4">
+        <label for="team-dept" class="form-label">
+          Select a schedule to view:
+        </label>
+        <div class="d-flex align-items-center">
+          <div class="flex-grow-1">
+            <select
+              id="team"
+              v-model="selectedTeam"
+              class="form-control"
+              v-if="!deptFlag"
+            >
+              <option
+                v-for="(employees, teamName) in teamData"
+                :key="teamName"
+                :value="teamName"
+              >
+                {{ teamName }}'s Team
+              </option>
+            </select>
+            <select
+              id="dept"
+              v-model="selectedDept"
+              class="form-control"
+              v-if="deptFlag"
+            >
+              <option
+                v-for="(employees, deptName) in deptData"
+                :key="deptName"
+                :value="deptName"
+              >
+                {{ deptName }}
+              </option>
+            </select>
+          </div>
+          <!-- Switcher Button to toggle between Team and Department -->
+          <button
+            class="btn btn-secondary ml-3"
+            @click="toggleScheduleView"
+          >
+            Switch to {{ deptFlag ? 'Team' : 'Department' }}
+          </button>
+        </div>
       </div>
-      
+
       <!-- Button to trigger updateInfo method -->
       <div class="mb-4 d-flex justify-content-center">
         <button
@@ -61,7 +81,7 @@
           Generate Team Information
         </button>
       </div>
-      
+
       <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
       <!-- Team Data Section -->
       <div class="card" v-if="teamData">
@@ -71,10 +91,7 @@
           <p>
             <strong>Total Team Members:</strong> {{ totalMembers }}
           </p>
-
-          <!-- Add a solid line between "Total Team Members" and staff info -->
           <hr />
-
           <!-- Staff Working in Office -->
           <h6 class="text-center">Staff Working in Office</h6>
           <table class="table table-bordered">
@@ -114,7 +131,7 @@
                 <td colspan="2">
                   <ol class="staff-details">
                     <li
-                      v-for="staff in schedule?.office?.fullDay"
+                      v-for="staff in schedule?.office?.fullDay || []"
                       :key="staff.name"
                     >
                       [{{ staff.role }}] {{ staff.name }}
@@ -124,7 +141,6 @@
               </tr>
             </tbody>
           </table>
-
           <!-- Staff Working from Home -->
           <h6 class="text-center">Staff Working from Home</h6>
           <table class="table table-bordered">
@@ -193,13 +209,13 @@
         data: {
           staffID: localStorage.getItem("staffID"),
           currEmployee: [],
-          teams: {}, // Populated from the API /getTeamsNames that hasnt been created
+          teams: {},
           selectedTeam: "",
           selectedDate: "",
           selectedDept: "",
           flag: false,
           teamData: null,
-          deptData:{HR:'asdasd',SOEMTHINGA:'asdasd'},
+          deptData: { ZimingHRnerds: 'asdasd', ZimingHRveryNerds: 'asdasd' },
           statusMessage: "",
           statusClass: "",
           minDate: "",
@@ -207,19 +223,23 @@
           totalMembers: "",
           totalWFH: 0,
           deptFlag: false,
-          schedule:{
-                    office:{
-                      AM: [],
-                      PM: [],
-                      fullDay: []
-                    },
-                    wfh:{
-                      AM: [],
-                      PM: [],
-                      fullDay: []
-                    }}, 
+          schedule: {
+            office: {
+              AM: [],
+              PM: [],
+              fullDay: []
+            },
+            wfh: {
+              AM: [],
+              PM: [],
+              fullDay: []
+            }
+          },
         },
         methods: {
+          toggleScheduleView() {
+            this.deptFlag = !this.deptFlag;
+          },
           // Fetch Team Names from the API 'getTeamNames'
           async fetchTeams() {
             try {
