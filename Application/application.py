@@ -118,6 +118,8 @@ def withdrawApplication():
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
     reason = data.get('Reason') 
+    withdrawal_reason= data.get('Withdrawal_Reason')
+    status= data.get('Status')
     managerid = find_manager(staff_id)
 
     connection = get_db_connection()
@@ -127,18 +129,18 @@ def withdrawApplication():
             delete_query = """
                 DELETE FROM Application
                 WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
-                AND Status_Of_Application = 'Pending'
+                AND Status_Of_Application = %s
             """
-            cursor.execute(delete_query, (staff_id, date_applied, time_of_day))
+            cursor.execute(delete_query, (staff_id, date_applied, time_of_day,status))
             connection.commit()
             print('i did this part')
 
             # Step 2: Log the withdrawal in the Log table
             log_query = """
-                INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
-                VALUES (%s, %s, %s, %s, %s , %s)
+                INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Withdrawal_Reason)
+                VALUES (%s, %s, %s, %s, %s , %s, %s)
             """
-            cursor.execute(log_query, (staff_id, date_applied, time_of_day, managerid,'Withdrawn', reason))
+            cursor.execute(log_query, (staff_id, date_applied, time_of_day, managerid,'Withdrawn', reason, withdrawal_reason))
             connection.commit()
             print('i did this part')
 

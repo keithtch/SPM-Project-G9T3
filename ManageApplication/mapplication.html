@@ -107,6 +107,9 @@
         </b-card-body>
       </b-card>
 
+
+
+
       <!-- Card for Rejected Applications both My Own/Manager View -->
       <b-card v-if="activeTab === 'rejected'" class="card mb-4">
         <b-card-header :class="{'bg-danger text-white': isManagerView}">
@@ -211,6 +214,7 @@
         totalNumberInTeam: '', 
         totalInOffice: '', 
         totalWFH: '', 
+        withdrawalReason: null,
       },
       computed: {
         percentageWFH() {
@@ -473,6 +477,13 @@
             .catch(error => console.error('Error fetching data:', error));
         },
 
+        openWithdrawalModal(application){
+          this.selectedItem = application
+          this.withdrawalReason = ''
+          $('#withdrawalModal').modal('show')
+        },
+
+
         async withdraw(item){
           // TO BE DONE xd
           console.log(item)
@@ -483,6 +494,7 @@
                 Date_Applied: item.Date_Applied,
                 Time_Of_Day: item.Time_Of_Day,
                 Reason: item.Reason,
+                Status: item.Status_Of_Application
               });
               console.log(response)
               if (response.data.status === 'success') {
@@ -500,6 +512,33 @@
           
 
           }
+          else if (item.Status_Of_Application=='Approved'){
+            try {
+              const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
+                Staff_ID: item.Staff_ID,
+                Date_Applied: item.Date_Applied,
+                Time_Of_Day: item.Time_Of_Day,
+                Reason: item.Reason,
+                Withdraw_Reason: this.withdrawalReason,
+                Status: item.Status_Of_Application
+
+              });
+              console.log(response)
+              if (response.data.status === 'success') {
+                this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
+                app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
+              );
+                alert('Application withdrawn successfully.');
+              } else {
+                alert('Failed to withdraw the application.');
+              }
+            } catch (error) {
+              console.error('Error during withdrawal:', error);
+              alert('An error occurred while trying to withdraw the application.');
+            }
+          }
+
+
         }
       },
 
