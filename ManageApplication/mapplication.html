@@ -100,12 +100,37 @@
           <div v-else>
             <b-table :items="teamApplications['Approved']" :fields="fields" responsive="sm">
               <template v-slot:cell(Withdraw)="data">
-              <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
-            </template>
+                <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+              </template>
             </b-table>
           </div>
         </b-card-body>
       </b-card>
+      <!-- Withdrawal Modal (Jing Hang)-->
+      <div class="modal fade show d-block" v-if="showWithdrawalModal" tabindex="-1" role="dialog"
+        style="display: block;">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Provide Withdrawal Reason</h5>
+              <button type="button" class="close" @click="closeWithdrawalModal">
+                <span>&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <textarea v-model="withdrawalReason" class="form-control" rows="3" maxlength="250"
+                placeholder="Enter your withdrawal reason (max 250 characters)"></textarea>
+              <small>{{ withdrawalReason.length }} / 250</small>
+            </div>
+            <div class="modal-footer">
+              <b-button variant="secondary" @click="closeWithdrawalModal">Close</b-button>
+              <b-button variant="primary" @click="submitWithdrawal">Submit</b-button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
 
 
 
@@ -116,7 +141,8 @@
           {{ isManagerView ? 'Team Rejected Applications' : 'My Rejected Applications' }}
         </b-card-header>
         <b-card-body>
-          <b-table v-if="!isManagerView" :items="ownApplications['Rejected']" :fields="fieldsr" responsive="sm"></b-table>
+          <b-table v-if="!isManagerView" :items="ownApplications['Rejected']" :fields="fieldsr"
+            responsive="sm"></b-table>
           <div v-else>
             <b-table :items="teamApplications['Rejected']" :fields="fieldsr" responsive="sm">
             </b-table>
@@ -173,11 +199,15 @@
         isManagerView: false, // used to toggle between views
         activeTab: "approved",
         ApplicationArr: [],
-        teamApplications: {'Approved':[],'Pending':[],'Rejected':[]},
-        ownApplications: {'Approved':[],'Pending':[],'Rejected':[]},
-        dateSortedApproved:{},
+        teamApplications: { 'Approved': [], 'Pending': [], 'Rejected': [] },
+        ownApplications: { 'Approved': [], 'Pending': [], 'Rejected': [] },
+        dateSortedApproved: {},
+        // Jing Hang withdrawal modal
+        showWithdrawalModal: false,  // Controls whether the modal is visible
+        withdrawalReason: '',        // Holds the reason for withdrawal
+        selectedItem: null,          // Stores the application item to be withdrawn
 
-        fields: [ 
+        fields: [
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Staff_Name", label: "Staff Name" },
           { key: "Date_Applied", label: "Date Applied" },
@@ -185,9 +215,9 @@
           { key: "Status_Of_Application", label: "Status" },
           { key: "Reason", label: "Reason" },
           { key: "Decision", label: "Decision" },
-          { key: "Withdraw", label: "Withdraw" }, 
+          { key: "Withdraw", label: "Withdraw" },
         ],
-        fieldsr: [  
+        fieldsr: [
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Staff_Name", label: "Staff Name" },
           { key: "Date_Applied", label: "Date Applied" },
@@ -211,9 +241,9 @@
         rejectionReason: '',
         selectedItem: null,
         selectedDate: null,
-        totalNumberInTeam: '', 
-        totalInOffice: '', 
-        totalWFH: '', 
+        totalNumberInTeam: '',
+        totalInOffice: '',
+        totalWFH: '',
         withdrawalReason: null,
       },
       computed: {
@@ -226,14 +256,15 @@
       },
 
       async mounted() {
-        try{
+        try {
           await this.getrole()
           this.getOwnApplications()
           this.getteam()
           this.getTeamApplications()
-      }catch (error){
-        console.error('Error during mounted execution',error)
-      }},
+        } catch (error) {
+          console.error('Error during mounted execution', error)
+        }
+      },
 
       methods: {
 
@@ -275,7 +306,7 @@
           if (resLen > 1) {
             this.totalNumberInTeam = resLen
           } else {
-            for (const [key,value] of Object.entries(this.teamData)) {
+            for (const [key, value] of Object.entries(this.teamData)) {
               this.totalNumberInTeam = value.length
             }
           }
@@ -285,8 +316,8 @@
             var response = await axios.post('http://localhost:5001/getTeamApplications', {
               staffID: this.staffID  // send staffID in the request body as JSON
             });
-            
-            
+
+
             if (response.data.status === 'success') {
               console.log(response.data.Applications);  // Log the actual pending applications
               // Optionally, store the result in a data property for further use
@@ -316,7 +347,7 @@
                     this.tempApproveCount[startDate][staffID] = 1
                   }
 
-                  for (const [key,value] of Object.entries(this.tempApproveCount)) {
+                  for (const [key, value] of Object.entries(this.tempApproveCount)) {
                     this.dateSortedApproved[key] = Object.keys(value).length
                   }
                   console.log(this.dateSortedApproved)
@@ -390,7 +421,7 @@
           try {
             if (this.tempApproveCount[item.Date_Applied]) {
               if (!(item.Staff_ID in this.tempApproveCount[item.Date_Applied])) {
-                var percentWFH = (this.dateSortedApproved[item.Date_Applied]+1)/this.totalNumberInTeam
+                var percentWFH = (this.dateSortedApproved[item.Date_Applied] + 1) / this.totalNumberInTeam
                 if (percentWFH > 0.5) {
                   alert("Quota exceeded")
                   return
@@ -467,7 +498,7 @@
           this.closeRejectionModal();
         },
 
-        findstaffid(item){
+        findstaffid(item) {
           fetch('http://localhost:5000/employee')
             .then(response => response.json())
             .then(returnedJSON => {
@@ -477,69 +508,154 @@
             .catch(error => console.error('Error fetching data:', error));
         },
 
-        openWithdrawalModal(application){
+        openWithdrawalModal(application) {
           this.selectedItem = application
           this.withdrawalReason = ''
           $('#withdrawalModal').modal('show')
         },
 
 
-        async withdraw(item){
-          // TO BE DONE xd
-          console.log(item)
-          if (item.Status_Of_Application=='Pending'){
-            try {
-              const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
-                Staff_ID: item.Staff_ID,
-                Date_Applied: item.Date_Applied,
-                Time_Of_Day: item.Time_Of_Day,
-                Reason: item.Reason,
-                Status: item.Status_Of_Application
-              });
-              console.log(response)
-              if (response.data.status === 'success') {
-                this.ownApplications['Pending'] = this.ownApplications['Pending'].filter(
-                app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
-              );
-                alert('Application withdrawn successfully.');
-              } else {
-                alert('Failed to withdraw the application.');
-              }
-            } catch (error) {
-              console.error('Error during withdrawal:', error);
-              alert('An error occurred while trying to withdraw the application.');
-            }
-          
+        // async withdraw(item) {
+        //   // TO BE DONE xd
+        //   console.log(item)
+        //   if (item.Status_Of_Application == 'Pending') {
+        //     try {
+        //       const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
+        //         Staff_ID: item.Staff_ID,
+        //         Date_Applied: item.Date_Applied,
+        //         Time_Of_Day: item.Time_Of_Day,
+        //         Reason: item.Reason,
+        //         Status: item.Status_Of_Application
+        //       });
+        //       console.log(response)
+        //       if (response.data.status === 'success') {
+        //         this.ownApplications['Pending'] = this.ownApplications['Pending'].filter(
+        //           app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
+        //         );
+        //         alert('Application withdrawn successfully.');
+        //       } else {
+        //         alert('Failed to withdraw the application.');
+        //       }
+        //     } catch (error) {
+        //       console.error('Error during withdrawal:', error);
+        //       alert('An error occurred while trying to withdraw the application.');
+        //     }
+        //     // Jing Hang
+        //     this.withdrawPendingApplication(item);
 
+
+        //   }
+        //   else if (item.Status_Of_Application == 'Approved') {
+        //     // Open the modal for approved applications
+        //     this.selectedItem = item; // Store the selected application
+        //     this.withdrawalReason = ''; // Reset any previous reason
+        //     this.showWithdrawalModal = true; // Show the modal
+        //     try {
+        //       const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
+        //         Staff_ID: item.Staff_ID,
+        //         Date_Applied: item.Date_Applied,
+        //         Time_Of_Day: item.Time_Of_Day,
+        //         Reason: item.Reason,
+        //         Withdraw_Reason: this.withdrawalReason,
+        //         Status: item.Status_Of_Application
+
+        //       });
+        //       console.log(response)
+        //       if (response.data.status === 'success') {
+        //         this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
+        //           app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
+        //         );
+        //         alert('Application withdrawn successfully.');
+        //       } else {
+        //         alert('Failed to withdraw the application.');
+        //       }
+        //     } catch (error) {
+        //       console.error('Error during withdrawal:', error);
+        //       alert('An error occurred while trying to withdraw the application.');
+        //     }
+        //   }
+
+
+        // },
+        withdraw(item) {
+          if (item.Status_Of_Application === 'Pending') {
+            // Handle withdrawal directly for pending applications
+            this.withdrawPendingApplication(item);
+          } else if (item.Status_Of_Application === 'Approved') {
+            // Open the modal for approved applications
+            this.selectedItem = item; // Store the selected application
+            this.withdrawalReason = ''; // Reset any previous reason
+            this.showWithdrawalModal = true; // Show the modal
           }
-          else if (item.Status_Of_Application=='Approved'){
-            try {
-              const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
-                Staff_ID: item.Staff_ID,
-                Date_Applied: item.Date_Applied,
-                Time_Of_Day: item.Time_Of_Day,
-                Reason: item.Reason,
-                Withdraw_Reason: this.withdrawalReason,
-                Status: item.Status_Of_Application
+        },
 
-              });
-              console.log(response)
-              if (response.data.status === 'success') {
-                this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
-                app => !(app.Staff_ID === item.Staff_ID && app.Date_Applied === item.Date_Applied && app.Time_Of_Day === item.Time_Of_Day)
+        async withdrawPendingApplication(item) {
+          try {
+            const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
+              Staff_ID: item.Staff_ID,
+              Date_Applied: item.Date_Applied,
+              Time_Of_Day: item.Time_Of_Day,
+              Reason: item.Reason,
+              Status: item.Status_Of_Application
+            });
+            console.log(response);
+            if (response.data.status === 'success') {
+              this.ownApplications['Pending'] = this.ownApplications['Pending'].filter(
+                app =>
+                  !(
+                    app.Staff_ID === item.Staff_ID &&
+                    app.Date_Applied === item.Date_Applied &&
+                    app.Time_Of_Day === item.Time_Of_Day
+                  )
               );
-                alert('Application withdrawn successfully.');
-              } else {
-                alert('Failed to withdraw the application.');
-              }
-            } catch (error) {
-              console.error('Error during withdrawal:', error);
-              alert('An error occurred while trying to withdraw the application.');
+              alert('Application withdrawn successfully.');
+            } else {
+              alert('Failed to withdraw the application.');
             }
+          } catch (error) {
+            console.error('Error during withdrawal:', error);
+            alert('An error occurred while trying to withdraw the application.');
+          }
+        },
+        async submitWithdrawal() {
+          if (!this.withdrawalReason) {
+            alert('Please provide a reason for withdrawal.');
+            return;
           }
 
+          try {
+            const response = await axios.post('http://localhost:5001/withdrawApprovedApplication', {
+              Staff_ID: this.selectedItem.Staff_ID,
+              Date_Applied: this.selectedItem.Date_Applied,
+              Time_Of_Day: this.selectedItem.Time_Of_Day,
+              Withdraw_Reason: this.withdrawalReason
+            });
+            console.log(response);
+            if (response.data.status === 'success') {
+              this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
+                app =>
+                  !(
+                    app.Staff_ID === this.selectedItem.Staff_ID &&
+                    app.Date_Applied === this.selectedItem.Date_Applied &&
+                    app.Time_Of_Day === this.selectedItem.Time_Of_Day
+                  )
+              );
+              alert('Application withdrawn successfully.');
+              this.closeWithdrawalModal();
+            } else {
+              alert('Failed to withdraw the application.');
+            }
+          } catch (error) {
+            console.error('Error during withdrawal:', error);
+            alert('An error occurred while trying to withdraw the application.');
+          }
+        },
 
-        }
+        closeWithdrawalModal() {
+          this.showWithdrawalModal = false;
+          this.selectedItem = null;
+          this.withdrawalReason = '';
+        },
       },
 
 
