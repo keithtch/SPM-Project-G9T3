@@ -44,9 +44,20 @@ def updateDates():
     try:
         with connection.cursor() as cursor:
             for entry in dates:
-                cursor.execute("""INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
-    VALUES (%s,%s,%s,%s,%s,%s)""",(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5]))
-            connection.commit()
+                application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
+                VALUES (%s,%s,%s,%s,%s,%s)"""
+                cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5]))
+                connection.commit()
+                print('application success')
+
+                log_query="""
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason) VALUES (%s,%s,%s,%s,%s,%s)
+                """
+                cursor.execute(log_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5]))
+                connection.commit()
+                print('application success logged')
+
+             
             if dates:
                 print(dates)
                 return jsonify({"status": "success", "received_dates": dates}), 200
