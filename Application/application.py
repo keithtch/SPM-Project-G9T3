@@ -129,6 +129,7 @@ def withdrawApplication():
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
     reason = data.get('Reason') 
+    withdrawal_reason= data.get('Withdrawal_Reason')
     status= data.get('Status')
     managerid = find_manager(staff_id)
 
@@ -147,10 +148,10 @@ def withdrawApplication():
 
             # Step 2: Log the withdrawal in the Log table
             log_query = """
-                INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason)
-                VALUES (%s, %s, %s, %s, %s , %s)
+                INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Withdrawal_Reason)
+                VALUES (%s, %s, %s, %s, %s , %s, %s)
             """
-            cursor.execute(log_query, (staff_id, date_applied, time_of_day, managerid,'Withdrawn', reason))
+            cursor.execute(log_query, (staff_id, date_applied, time_of_day, managerid,'Withdrawn', reason, withdrawal_reason))
             connection.commit()
             print('i did this part')
 
@@ -335,13 +336,13 @@ def findid(id,arr):
     
     return 0
 
-@app.route('/pendingwithdrawApprovedApplication', methods=['POST'])
-def pendingwithdrawApprovedApplication():
+@app.route('/withdrawApprovedApplication', methods=['POST'])
+def withdrawApprovedApplication():
     data = request.get_json()
     staff_id = data.get('Staff_ID')
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
-    withdraw_reason = data.get('Staff_Withdrawal_Reason')
+    withdraw_reason = data.get('Withdraw_Reason')
     manager_id = find_manager(staff_id)
 
     connection = get_db_connection()
@@ -357,23 +358,17 @@ def pendingwithdrawApprovedApplication():
             application = cursor.fetchone()
 
             if application:
-                # Update the status of the application to Pending_Withdrawal
-                update_query = """
-                    UPDATE Application SET Status_Of_Application = 'Pending_Withdrawal' 
-                    WHERE Staff_ID = %s and Date_Applied = %s and Time_Of_Day = %s and Status_Of_Application = 'Approved';
-
+                # Delete the application from the Application table
+                delete_query = """
+                    DELETE FROM Application
+                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Approved'
                 """
-                print(staff_id)
-                print(date_applied)
-                print(time_of_day)
-
-                cursor.execute(update_query, (staff_id, date_applied, time_of_day))
-                
+                cursor.execute(delete_query, (staff_id, date_applied, time_of_day))
 
                 # Insert into Staff_Application_Logs
                 log_query = """
                     INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason, Staff_Withdrawal_Reason)
+                    Status_Of_Application, Reason, Manager_Reason, Withdrawal_Reason)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(log_query, (
@@ -381,11 +376,10 @@ def pendingwithdrawApprovedApplication():
                     application[1],  # Date_Applied
                     application[2],  # Time_Of_Day
                     application[3],  # Reporting_Manager
-                    'Pending_Withdrawal',     # Status_Of_Application
+                    'Withdrawn',     # Status_Of_Application
                     application[5],  # Reason
                     application[6],  # Manager_Reason
-                    withdraw_reason,  # Withdrawal_Reason
-                    
+                    withdraw_reason  # Withdrawal_Reason
                 ))
 
                 connection.commit()
@@ -402,7 +396,7 @@ def pendingwithdrawApprovedApplication():
                 subject = "Employee Withdrawal of Approved WFH Application"
                 body = f"""Dear Manager,
 
-                Employee {staff_id} has applied for withdrawal for their approved WFH application for {date_applied} ({time_of_day}).
+                Employee {staff_id} has withdrawn their approved WFH application for {date_applied} ({time_of_day}).
 
                 Withdrawal Reason: {withdraw_reason}
 
@@ -441,116 +435,7 @@ def pendingwithdrawApprovedApplication():
                 
                 
                 
-                return jsonify({"status": "success", "message": "Pending Application withdrawal submitted"}), 200
-            else:
-                return jsonify({"status": "error", "message": "Application not found or not approved"}), 404
-    except Exception as e:
-        print(f"Error withdrawing approved application: {e}")
-        return jsonify({"status": "error", "message": "Failed to withdraw application"}), 500
-    finally:
-        connection.close()
-        
-        
-@app.route('/RejectPendingWithdrawApprovedApplication', methods=['POST'])
-def RejectedPendingWithdrawApprovedApplication():
-    data = request.get_json()
-    staff_id = data.get('Staff_ID')
-    date_applied = data.get('Date_Applied')
-    time_of_day = data.get('Time_Of_Day')
-    manager_withdraw_reason = data.get('Withdrawal_Reason')
-    manager_id = find_manager(staff_id)
-
-    connection = get_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            # Retrieve application details before deleting
-            select_query = """
-                SELECT Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
-            """
-            print(staff_id,date_applied,time_of_day)
-            cursor.execute(select_query, (staff_id, date_applied, time_of_day))
-            application = cursor.fetchone()
-
-            if application:
-                # Update the status of the application to Pending_Withdrawal
-                update_query = """
-                    UPDATE Application SET Status_Of_Application = 'Approved'
-                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
-                """
-                print(staff_id,date_applied,time_of_day)
-                cursor.execute(update_query, (staff_id, date_applied, time_of_day))
-
-                # Insert into Staff_Application_Logs
-                log_query = """
-                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason,Manager_Withdrawal_Reason)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                cursor.execute(log_query, (
-                    application[0],  # Staff_ID
-                    application[1],  # Date_Applied
-                    application[2],  # Time_Of_Day
-                    application[3],  # Reporting_Manager
-                    'Pending_Withdrawal',     # Status_Of_Application
-                    application[5],  # Reason
-                    application[6],  # Manager_Reason
-                    manager_withdraw_reason # manager approve withdraw reason
-                ))
-
-                connection.commit()
-                # Insert code for email notification
-                 # Retrieve the manager's email address
-                cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
-                staff_result = cursor.fetchone()
-                if staff_result:
-                    staff_email = staff_result[0]
-                else:
-                    staff_email = None  # Handle the case where the email is not found
-
-                # Prepare the email content
-                subject = "Rejection of withdrawal of approved WFH"
-                body = f"""Dear Manager,
-
-                Manager {manager_id} has rejected your withdrawal for your approved WFH application for {date_applied} ({time_of_day}).
-
-                Rejecting Withdrawal Reason: {manager_withdraw_reason}
-
-                Best regards,
-                HR System
-                """
-
-                # Send the email to the manager
-                if staff_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = staff_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, staff_email, msg.as_string())
-
-                        print(f"Email sent to manager at {staff_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
-                else:
-                    print("Manager email not found; cannot send email.")
-
-                
-                
-                
-                return jsonify({"status": "success", "message": "Rejected withdrawal for application and logged"}), 200
+                return jsonify({"status": "success", "message": "Approved application withdrawn and logged"}), 200
             else:
                 return jsonify({"status": "error", "message": "Application not found or not approved"}), 404
     except Exception as e:
@@ -559,110 +444,7 @@ def RejectedPendingWithdrawApprovedApplication():
     finally:
         connection.close()
 
-@app.route('/ApprovePendingWithdrawApprovedApplication', methods=['POST'])
-def ApprovePendingWithdrawApprovedApplication():
-    data = request.get_json()
-    staff_id = data.get('Staff_ID')
-    date_applied = data.get('Date_Applied')
-    time_of_day = data.get('Time_Of_Day')
-    manager_id = find_manager(staff_id)
 
-    connection = get_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            # Retrieve application details before deleting
-            select_query = """
-                SELECT Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
-            """
-            print(staff_id,date_applied,time_of_day)
-            cursor.execute(select_query, (staff_id, date_applied, time_of_day))
-            application = cursor.fetchone()
-
-            if application:
-                # Update the status of the application to Pending_Withdrawal
-                delete_query = """
-                    DELETE FROM Application
-                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
-                """
-                print(staff_id,date_applied,time_of_day)
-                cursor.execute(delete_query, (staff_id, date_applied, time_of_day))
-
-                # Insert into Staff_Application_Logs
-                log_query = """
-                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason,Manager_Withdrawal_Reason)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                cursor.execute(log_query, (
-                    application[0],  # Staff_ID
-                    application[1],  # Date_Applied
-                    application[2],  # Time_Of_Day
-                    application[3],  # Reporting_Manager
-                    'Withdrawn',     # Status_Of_Application
-                    application[5],  # Reason
-                    application[6],  # Manager_Reason
-                    '' # manager approve withdraw reason
-                ))
-
-                connection.commit()
-                # Insert code for email notification
-                 # Retrieve the manager's email address
-                cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
-                staff_result = cursor.fetchone()
-                if staff_result:
-                    staff_email = staff_result[0]
-                else:
-                    staff_email = None  # Handle the case where the email is not found
-
-                # Prepare the email content
-                subject = "Approval of withdrawal of approved WFH"
-                body = f"""Dear Manager,
-
-                Manager {manager_id} has approved your withdrawal for your approved WFH application for {date_applied} ({time_of_day}).
-
-                Best regards,
-                HR System
-                """
-
-                # Send the email to the manager
-                if staff_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = staff_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, staff_email, msg.as_string())
-
-                        print(f"Email sent to manager at {staff_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
-                else:
-                    print("Manager email not found; cannot send email.")
-
-                
-                
-                
-                return jsonify({"status": "success", "message": "Rejected withdrawal for application and logged"}), 200
-            else:
-                return jsonify({"status": "error", "message": "Application not found or not approved"}), 404
-    except Exception as e:
-        print(f"Error withdrawing approved application: {e}")
-        return jsonify({"status": "error", "message": "Failed to withdraw application"}), 500
-    finally:
-        connection.close()
 
 
             
