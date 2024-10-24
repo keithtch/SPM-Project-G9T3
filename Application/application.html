@@ -131,7 +131,8 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
-  <script>
+  <script  type="module">
+    import { setDateLimits } from "../Utilities/dateBoundaryUtils.js";
     new Vue({
       el: "#app",
       data: {
@@ -260,17 +261,11 @@
         },
        
         setMinMaxDates() {
-          const currentDate = new Date();
-    
-          // Set minDate (2 months back)
-          const minDate = new Date(currentDate);
-          minDate.setMonth(currentDate.getMonth() - 2);
-          this.minDate = minDate.toISOString().split('T')[0]; 
-    
-          // Set maxDate (3 months forward)
-          const maxDate = new Date(currentDate);
-          maxDate.setMonth(currentDate.getMonth() + 3);
-          this.maxDate = maxDate.toISOString().split('T')[0];
+          const today = new Date();
+            const { minDate, maxDate } = setDateLimits(today);
+            this.minDate = minDate;
+            this.maxDate = maxDate;
+            // console.log(this.minDate, this.maxDate);
         },
 
         goBack() {

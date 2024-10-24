@@ -1,4 +1,4 @@
-import { setDateLimits } from '../ViewTeamSchedule/dateBoundaryUtils.js';
+import { setDateLimits } from '../Utilities/dateBoundaryUtils.js';
 
 $(document).ready(function () {
   // Calculate date limits
