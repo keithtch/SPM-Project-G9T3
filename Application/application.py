@@ -486,7 +486,7 @@ def RejectedPendingWithdrawApprovedApplication():
                 # Insert into Staff_Application_Logs
                 log_query = """
                     INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason,Manager_Withdrawal_Reason)
+                    Status_Of_Application, Reason, Manager_Reason,Staff_Withdrawal_Reason)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(log_query, (
@@ -583,6 +583,7 @@ def ApprovePendingWithdrawApprovedApplication():
 
             if application:
                 # Update the status of the application to Pending_Withdrawal
+                #print("Application:",application)
                 delete_query = """
                     DELETE FROM Application
                     WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
@@ -593,7 +594,7 @@ def ApprovePendingWithdrawApprovedApplication():
                 # Insert into Staff_Application_Logs
                 log_query = """
                     INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason,Manager_Withdrawal_Reason)
+                    Status_Of_Application, Reason, Manager_Reason,Staff_Withdrawal_Reason)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(log_query, (
@@ -699,7 +700,7 @@ def withdrawApprovedApplication():
                 # Insert into Staff_Application_Logs
                 log_query = """
                     INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
-                    Status_Of_Application, Reason, Manager_Reason, Manager_Withdrawal_Reason)
+                    Status_Of_Application, Reason, Manager_Reason, Staff_Withdrawal_Reason)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """
                 cursor.execute(log_query, (
