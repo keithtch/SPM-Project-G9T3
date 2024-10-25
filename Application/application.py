@@ -187,6 +187,8 @@ def approveApplication():
            
             # Retrieve the employee's email address
             cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
+            
+            
             result = cursor.fetchone()
             if result:
                 email = result[0]

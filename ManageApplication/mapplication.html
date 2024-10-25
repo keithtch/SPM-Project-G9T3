@@ -178,7 +178,7 @@
             </div>
             <div class="modal-footer">
               <b-button variant="secondary" @click="closeRejectionModal">Close</b-button>
-              <b-button variant="primary" @click="reject(rejectedData)">Submit</b-button>
+              <b-button variant="primary" @click="submitRejection">Submit</b-button>
             </div>
           </div>
         </div>
@@ -520,6 +520,7 @@
                 Decision: this.rejectionReason, // Set the rejection reason
               });
               // Close the modal
+              alert('Application successfully rejected!')
               this.closeRejectionModal();
             } else {
               console.error('Error:', response.data.message);
