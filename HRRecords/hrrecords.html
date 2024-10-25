@@ -68,41 +68,38 @@
         new Vue({
             el: "#app",
             data: {
-                hrRecords: [
-                    {
-                        id: 1,
-                        staffId: '1',
-                        wfhDate: '2024-10-25',
-                        timeOfDay: 'AM',
-                        managerId: 'M001',
-                        status: 'Approved',
-                        staffReason: 'Personal appointment during morning hours.',
-                        managerReason: null,
-                        staffWithdrawReason: null
-                    },
-                    {
-                        id: 2,
-                        staffId: '2',
-                        wfhDate: '2024-10-24',
-                        timeOfDay: 'Full Day',
-                        managerId: 'M002',
-                        status: 'Rejected',
-                        staffReason: 'Requesting WFH due to family emergency.',
-                        managerReason: 'Insufficient coverage in the office.',
-                        staffWithdrawReason: null
-                    },
-                    {
-                        id: 3,
-                        staffId: '3',
-                        wfhDate: '2024-10-23',
-                        timeOfDay: 'PM',
-                        managerId: 'M003',
-                        status: 'Withdrawn',
-                        staffReason: 'Needed WFH due to medical appointment in the afternoon.',
-                        managerReason: null,
-                        staffWithdrawReason: 'Medical appointment was rescheduled.'
-                    }
-                ]
+                hrRecords: []
+            },
+            mounted(){
+                fetch('http://localhost:5001/getLogs')
+                    .then(response => response.json()) 
+                    .then((returnedJSON) => {
+                        //console.log(returnedJSON);
+                        this.hrRecords = returnedJSON.data;
+                        // console.log(this.hrRecords);
+                        let converted_data = [];
+                        this.hrRecords.forEach(record => {
+                            // console.log(record); 
+                            converted_data.push({
+                                "id": record[0],
+                                "staffId": record[1],
+                                "wfhDate": record[2],
+                                "timeOfDay": record[3],
+                                "managerId": record[4],
+                                "status": record[5],
+                                "staffReason": record[6],
+                                "managerReason": record[7],
+                                "staffWithdrawReason": record[8]
+                            });
+                        });
+
+                        //console.log(converted_data);
+                        this.hrRecords = converted_data;
+                    })
+                    .catch(error => {
+                        console.error('Error fetching HR records:', error);
+                    });
+
             },
             methods: {
                 goBack() {

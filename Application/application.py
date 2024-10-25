@@ -775,6 +775,16 @@ def withdrawApprovedApplication():
     finally:
         connection.close()
             
+@app.route('/getLogs')
+def getLogs():
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Staff_Application_Logs")
+            result = cursor.fetchall()
+            return {'data': result}
+    finally:
+        connection.close()
    
         
 

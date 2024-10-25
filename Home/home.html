@@ -123,6 +123,8 @@
               staffInd = this.findId(this.staffID, dataArr);
               this.userName = dataArr[staffInd][1] + " " + dataArr[staffInd][2];
               report = dataArr[staffInd][7]; 
+              this.userRole = dataArr[staffInd][3];
+              // console.log("userRole: ", this.userRole);
               this.isLoading = false;
             // team = this.findTeam(report,dataArr)
             // console.log(team)
