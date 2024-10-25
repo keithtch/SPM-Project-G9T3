@@ -324,15 +324,17 @@ def find_manager(id):
             result = cursor.fetchall()
             staffind = findid(id,result)
             managerid = result[staffind][7]
+            print(managerid)
             return managerid
     finally:
         connection.close()
         
 def findid(id,arr):
     for i in range(len(arr)):
-        if id==arr[i][0]:
+        # print (id,arr[i][0])
+        if int(id)==int(arr[i][0]):
+            print(i)
             return i
-    
     return 0
 
 @app.route('/pendingwithdrawApprovedApplication', methods=['POST'])
@@ -341,8 +343,9 @@ def pendingwithdrawApprovedApplication():
     staff_id = data.get('Staff_ID')
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
-    withdraw_reason = data.get('Staff_Withdrawal_Reason')
+    withdraw_reason = data.get('Withdraw_Reason')
     manager_id = find_manager(staff_id)
+    print(manager_id)
 
     connection = get_db_connection()
     try:
@@ -359,15 +362,12 @@ def pendingwithdrawApprovedApplication():
             if application:
                 # Update the status of the application to Pending_Withdrawal
                 update_query = """
-                    UPDATE Application SET Status_Of_Application = 'Pending_Withdrawal' 
+                    UPDATE Application SET Status_Of_Application = 'Pending_Withdrawal', Staff_Withdrawal_Reason = %s
                     WHERE Staff_ID = %s and Date_Applied = %s and Time_Of_Day = %s and Status_Of_Application = 'Approved';
 
                 """
-                print(staff_id)
-                print(date_applied)
-                print(time_of_day)
 
-                cursor.execute(update_query, (staff_id, date_applied, time_of_day))
+                cursor.execute(update_query, (withdraw_reason,staff_id, date_applied, time_of_day))
                 
 
                 # Insert into Staff_Application_Logs
@@ -395,6 +395,7 @@ def pendingwithdrawApprovedApplication():
                 manager_result = cursor.fetchone()
                 if manager_result:
                     manager_email = manager_result[0]
+                    print(manager_email)
                 else:
                     manager_email = None  # Handle the case where the email is not found
 

@@ -549,6 +549,7 @@
         },
 
         withdraw(item) {
+          console.log(item)
           if (item.Status_Of_Application === 'Pending') {
             // Handle withdrawal directly for pending applications
             this.withdrawPendingApplication(item);
@@ -561,6 +562,7 @@
         },
 
         async withdrawPendingApplication(item) {
+          console.log(item)
           try {
             const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
               Staff_ID: item.Staff_ID,
@@ -636,7 +638,7 @@
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
-              Withdraw_Reason: this.rejectionReason
+              Withdrawal_Reason: this.rejectionReason
             });
             console.log(response);
             if (response.data.status === 'success') {
