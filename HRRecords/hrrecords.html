@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Records</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+    <style>
+        .table-container {
+            max-width: 90%;
+            margin: auto;
+        }
+        .text-wrap {
+            white-space: pre-wrap;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container mt-5 animate__animated animate__fadeIn">
+        <h1 class="text-center">HR Records</h1>
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" @click="goBack">
+                Go Back to Home Page
+            </button>
+        </div>
+        <div class="table-container">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Database Record ID</th>
+                        <th>Staff ID</th>
+                        <th>WFH Date Applied</th>
+                        <th>Time of Day</th>
+                        <th>Reporting Manager ID</th>
+                        <th>Application Status</th>
+                        <th>Reason for Application by Staff</th>
+                        <th>Why Manager Rejected/Withdraw Reason (If Any)</th>
+                        <th>Staff Withdraw Reason</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="record in hrRecords" :key="record.id">
+                        <td>{{ record.id }}</td>
+                        <td>{{ record.staffId }}</td>
+                        <td>{{ record.wfhDate }}</td>
+                        <td>{{ record.timeOfDay }}</td>
+                        <td>{{ record.managerId }}</td>
+                        <td>{{ record.status }}</td>
+                        <td class="text-wrap">{{ record.staffReason }}</td>
+                        <td class="text-wrap">{{ record.managerReason || 'N/A' }}</td>
+                        <td class="text-wrap">{{ record.staffWithdrawReason || 'N/A' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+            el: "#app",
+            data: {
+                hrRecords: [
+                    {
+                        id: 1,
+                        staffId: '1',
+                        wfhDate: '2024-10-25',
+                        timeOfDay: 'AM',
+                        managerId: 'M001',
+                        status: 'Approved',
+                        staffReason: 'Personal appointment during morning hours.',
+                        managerReason: null,
+                        staffWithdrawReason: null
+                    },
+                    {
+                        id: 2,
+                        staffId: '2',
+                        wfhDate: '2024-10-24',
+                        timeOfDay: 'Full Day',
+                        managerId: 'M002',
+                        status: 'Rejected',
+                        staffReason: 'Requesting WFH due to family emergency.',
+                        managerReason: 'Insufficient coverage in the office.',
+                        staffWithdrawReason: null
+                    },
+                    {
+                        id: 3,
+                        staffId: '3',
+                        wfhDate: '2024-10-23',
+                        timeOfDay: 'PM',
+                        managerId: 'M003',
+                        status: 'Withdrawn',
+                        staffReason: 'Needed WFH due to medical appointment in the afternoon.',
+                        managerReason: null,
+                        staffWithdrawReason: 'Medical appointment was rescheduled.'
+                    }
+                ]
+            },
+            methods: {
+                goBack() {
+                    window.location.href = "../Home/home.html";
+                }
+            }
+        });
+    </script>
+</body>
+</html>

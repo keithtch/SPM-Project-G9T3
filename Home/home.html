@@ -58,6 +58,11 @@
             </button>
           </div>
           <div class="col-md-12 mt-2">
+            <button class="btn btn-warning w-100 action-btn logout-btn" @click="viewHRRecords">
+              HR Records Access - HR Personnel Only
+            </button>
+          </div>
+          <div class="col-md-12 mt-2">
             <button class="btn btn-danger w-100 action-btn logout-btn" @click="logOut">
               Log Out
             </button>
@@ -155,6 +160,12 @@
             this.showNotification("Logging out...");
             setTimeout(() => {
               window.location.href = "../Login&Authentication/login.html";
+            }, 1750);
+          },
+          viewHRRecords() {
+            this.showNotification("Auto Redirecting to view HR Records.");
+            setTimeout(() => {
+              window.location.href = "../HRRecords/hrrecords.html";
             }, 1750);
           },
           showNotification(message) {
