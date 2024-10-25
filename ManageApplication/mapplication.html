@@ -154,7 +154,7 @@
             </div>
             <div class="modal-footer">
               <b-button variant="secondary" @click="closeWithdrawalModal">Close</b-button>
-              <b-button v-if="isManagerView" variant="primary" @click="withdraw(data.item)">Submit</b-button>
+              <b-button v-if="isManagerView" variant="primary" @click="submitWithdrawal">Submit</b-button>
               <b-button v-if="!isManagerView" variant="primary" @click="pendingsubmitWithdrawal">Submit</b-button>
             </div>
           </div>
@@ -590,6 +590,41 @@
             alert('An error occurred while trying to withdraw the application.');
           }
         },
+
+        async submitWithdrawal() {
+          if (!this.withdrawalReason) {
+            alert('Please provide a reason for withdrawal.');
+            return;
+          }
+
+          try {
+            const response = await axios.post('http://localhost:5001/withdrawApprovedApplication', {
+              Staff_ID: this.selectedItem.Staff_ID,
+              Date_Applied: this.selectedItem.Date_Applied,
+              Time_Of_Day: this.selectedItem.Time_Of_Day,
+              Withdraw_Reason: this.withdrawalReason
+            });
+            console.log(response);
+            if (response.data.status === 'success') {
+              this.teamApplications['Approved'] = this.teamApplications['Approved'].filter(
+                app =>
+                  !(
+                    app.Staff_ID === this.selectedItem.Staff_ID &&
+                    app.Date_Applied === this.selectedItem.Date_Applied &&
+                    app.Time_Of_Day === this.selectedItem.Time_Of_Day
+                  )
+              );
+              alert('Application withdrawn successfully.');
+              this.closeWithdrawalModal();
+            } else {
+              alert('Failed to withdraw the application.');
+            }
+          } catch (error) {
+            console.error('Error during withdrawal:', error);
+            alert('An error occurred while trying to withdraw the application.');
+          }
+        },
+
 
         async pendingsubmitWithdrawal() {
           if (!this.withdrawalReason) {

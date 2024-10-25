@@ -665,7 +665,113 @@ def ApprovePendingWithdrawApprovedApplication():
     finally:
         connection.close()
 
+@app.route('/withdrawApprovedApplication', methods=['POST'])
+def withdrawApprovedApplication():
+    data = request.get_json()
+    staff_id = data.get('Staff_ID')
+    date_applied = data.get('Date_Applied')
+    time_of_day = data.get('Time_Of_Day')
+    withdraw_reason = data.get('Withdraw_Reason')
+    manager_id = find_manager(staff_id)
 
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            # Retrieve application details before deleting
+            select_query = """
+                SELECT Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason
+                FROM Application
+                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Approved'
+            """
+            cursor.execute(select_query, (staff_id, date_applied, time_of_day))
+            application = cursor.fetchone()
+
+            if application:
+                # Delete the application from the Application table
+                delete_query = """
+                    DELETE FROM Application
+                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Approved'
+                """
+                cursor.execute(delete_query, (staff_id, date_applied, time_of_day))
+
+                # Insert into Staff_Application_Logs
+                log_query = """
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
+                    Status_Of_Application, Reason, Manager_Reason, Manager_Withdrawal_Reason)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """
+                cursor.execute(log_query, (
+                    application[0],  # Staff_ID
+                    application[1],  # Date_Applied
+                    application[2],  # Time_Of_Day
+                    application[3],  # Reporting_Manager
+                    'Withdrawn',     # Status_Of_Application
+                    application[5],  # Reason
+                    application[6],  # Manager_Reason
+                    withdraw_reason  # Withdrawal_Reason
+                ))
+
+                connection.commit()
+                # Insert code for email notification
+                 # Retrieve the manager's email address
+                cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (manager_id,))
+                manager_result = cursor.fetchone()
+                if manager_result:
+                    manager_email = manager_result[0]
+                else:
+                    manager_email = None  # Handle the case where the email is not found
+
+                # Prepare the email content
+                subject = "Employee Withdrawal of Approved WFH Application"
+                body = f"""Dear Manager,
+
+                Employee {staff_id} has withdrawn their approved WFH application for {date_applied} ({time_of_day}).
+
+                Withdrawal Reason: {withdraw_reason}
+
+                Best regards,
+                HR System
+                """
+
+                # Send the email to the manager
+                if manager_email:
+                    try:
+                        # Set up the email sender credentials
+                        email_sender = os.environ.get('EMAIL_SENDER')
+                        email_password = os.environ.get('EMAIL_PASSWORD')
+
+                        # Create a multipart message
+                        msg = MIMEMultipart()
+                        msg['From'] = email_sender
+                        msg['To'] = manager_email
+                        msg['Subject'] = subject
+
+                        # Attach the email body to the message
+                        msg.attach(MIMEText(body, 'plain'))
+
+                        # Set up the secure SSL context and SMTP server
+                        context = ssl.create_default_context()
+                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+                            server.login(email_sender, email_password)
+                            server.sendmail(email_sender, manager_email, msg.as_string())
+
+                        print(f"Email sent to manager at {manager_email}")
+                    except Exception as e:
+                        print(f"Error sending email to manager: {e}")
+                else:
+                    print("Manager email not found; cannot send email.")
+
+                
+                
+                
+                return jsonify({"status": "success", "message": "Approved application withdrawn and logged"}), 200
+            else:
+                return jsonify({"status": "error", "message": "Application not found or not approved"}), 404
+    except Exception as e:
+        print(f"Error withdrawing approved application: {e}")
+        return jsonify({"status": "error", "message": "Failed to withdraw application"}), 500
+    finally:
+        connection.close()
             
    
         
