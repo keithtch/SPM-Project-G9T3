@@ -98,7 +98,7 @@
         <b-card-body>
           <b-table v-if="!isManagerView" :items="ownApplications['Approved']" :fields="fields" responsive="sm">
             <template v-slot:cell(Withdraw)="data">
-              <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+              <b-button :disabled="!data.item.withdrawable" variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
           </b-table>
           <div v-else>
@@ -383,6 +383,7 @@
         },
 
         getOwnApplications() {
+          const today = new Date()
           this.staffID = localStorage.getItem('staffID');
           staffInd = this.findId(this.staffID, this.dataArr);
 
@@ -396,6 +397,16 @@
                 if (entry[0] == this.staffID) {
                   const staffInd = this.findId(this.staffID, this.dataArr);
 
+                  if (entry[4] == 'Approved') {
+                    var withdrawable = true
+                    appDate = new Date(`${entry[1]}`)
+                    appDate.setHours(0,0,0,0)
+                    console.log(today-appDate)
+                    if ((today-appDate) > 1296000000 || (today-appDate) < -1209600000) {
+                      withdrawable = false
+                    }
+                  }
+
                   this.ownApplications[entry[4]].push({
                     Staff_ID: this.staffID,
                     Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
@@ -403,9 +414,13 @@
                     Time_Of_Day: entry[2],
                     Status_Of_Application: entry[4],
                     Reason: entry[5],
-                    Decision: 'No Issue'
+                    Decision: 'No Issue',
+                    withdrawable: withdrawable
                   })
+
+
                 }
+
               }
             });
         },
