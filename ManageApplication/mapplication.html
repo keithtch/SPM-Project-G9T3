@@ -98,7 +98,7 @@
       <b-card-body>
         <b-table v-if="!isManagerView" :items="ownApplications['Approved']" :fields="fields" responsive="sm">
           <template v-slot:cell(Withdraw)="data">
-            <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+            <b-button :disabled="!data.item.withdrawable" variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
           </template>
           <template v-slot:cell(Change)="data">
             <b-button variant="warning" @click="openChangeModal(data.item)">Change</b-button>
@@ -107,7 +107,7 @@
         <div v-else>
           <b-table :items="teamApplications['Approved']" :fields="fields" responsive="sm">
             <template v-slot:cell(Withdraw)="data">
-              <b-button :disabled="!data.item.withdrawable" variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+              <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
           </b-table>
         </div>
@@ -310,7 +310,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-vue@2.21.2/dist/bootstrap-vue.min.js"></script>
-  <script src="mapplication.js"></script>
 </body>
 
 </html>
@@ -544,7 +543,7 @@
                     var withdrawable = true
                     appDate = new Date(`${entry[1]}`)
                     appDate.setHours(0,0,0,0)
-                    console.log(today-appDate)
+                    // console.log(today-appDate)
                     if ((today-appDate) > 1296000000 || (today-appDate) < -1209600000) {
                       withdrawable = false
                     }
