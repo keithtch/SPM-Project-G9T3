@@ -90,26 +90,143 @@
         </b-card-body>
       </b-card>
 
-      <!-- Approved Applications Card -->
-      <b-card v-if="activeTab === 'approved'" class="card mb-4">
-        <b-card-header :class="{'bg-danger text-white': isManagerView}">
-          {{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}
-        </b-card-header>
-        <b-card-body>
-          <b-table v-if="!isManagerView" :items="ownApplications['Approved']" :fields="fields" responsive="sm">
+    <!-- Approved Applications Card -->
+    <b-card v-if="activeTab === 'approved'" class="card mb-4">
+      <b-card-header :class="{'bg-danger text-white': isManagerView}">
+        {{ isManagerView ? 'Team Approved Applications' : 'My Approved Applications' }}
+      </b-card-header>
+      <b-card-body>
+        <b-table v-if="!isManagerView" :items="ownApplications['Approved']" :fields="fields" responsive="sm">
+          <template v-slot:cell(Withdraw)="data">
+            <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
+          </template>
+          <template v-slot:cell(Change)="data">
+            <b-button variant="warning" @click="openChangeModal(data.item)">Change</b-button>
+          </template>
+        </b-table>
+        <div v-else>
+          <b-table :items="teamApplications['Approved']" :fields="fields" responsive="sm">
             <template v-slot:cell(Withdraw)="data">
               <b-button :disabled="!data.item.withdrawable" variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
             </template>
           </b-table>
-          <div v-else>
-            <b-table :items="teamApplications['Approved']" :fields="fields" responsive="sm">
-              <template v-slot:cell(Withdraw)="data">
-                <b-button variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
-              </template>
-            </b-table>
+        </div>
+      </b-card-body>
+    </b-card>
+
+    <!-- Change Application Modal -->
+    <div v-if="showChangeModal" class="modal fade show d-block" tabindex="-1" role="dialog">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Change Application Date</h5>
+            <button type="button" class="close" @click="closeChangeModal">
+              <span>&times;</span>
+            </button>
           </div>
-        </b-card-body>
-      </b-card>
+          <div class="modal-body">
+            <b-form-group label="Select your WFH Application Type" label-for="application-type" class="form-group">
+              <b-form-radio-group
+                id="application-type"
+                v-model="applicationType"
+                :options="[{
+                  text: 'Recurring Application',
+                  value: 'recurring'
+                }, {
+                  text: 'Fixed Period Application',
+                  value: 'fixed'
+                }]"
+                name="application-type"
+                class="transition-fade"
+              ></b-form-radio-group>
+            </b-form-group>
+
+            <!-- Recurring Application Options -->
+            <div v-if="applicationType === 'recurring'" class="transition-fade fade-in">
+              <b-form-group label="Select Days for Recurring Application" class="form-group">
+                <b-form-checkbox-group v-model="recurringDays" :options="daysOfWeek"></b-form-checkbox-group>
+              </b-form-group>
+
+              <div v-for="day in recurringDays" :key="day" class="mb-3">
+                <label>{{ getDayName(day) }}</label>
+                <b-form-select v-model="dayOptions[day]" :options="timeOptions"></b-form-select>
+              </div>
+
+              <b-form-group label="Select Recurring Date Range" class="form-group">
+                <div class="row">
+                  <div class="col-md-6">
+                    <b-form-datepicker
+                      v-model="recurringStartDate"
+                      :today="currentDate"
+                      :min="minDate"
+                      :max="maxDate"
+                      placeholder="Start Date"
+                      class="w-100"
+                    ></b-form-datepicker>
+                  </div>
+                  <div class="col-md-6">
+                    <b-form-datepicker
+                      v-model="recurringEndDate"
+                      :min="recurringStartDate"
+                      :max="maxDate"
+                      placeholder="End Date"
+                      class="w-100"
+                    ></b-form-datepicker>
+                  </div>
+                </div>
+              </b-form-group>
+            </div>
+
+          <!-- Fixed Period Application -->
+          <div v-if="applicationType === 'fixed'" class="transition-fade fade-in">
+            <b-form-group label="Select Date Range for Fixed Period Application" class="form-group">
+              <div class="row">
+                <div class="col-md-6">
+                  <b-form-datepicker
+                    v-model="startDate"
+                    :today="currentDate"
+                    :min="minDate"
+                    :max="maxDate"
+                    placeholder="Start Date"
+                    class="w-100"
+                    @input="generateDateArray"
+                  ></b-form-datepicker>
+                </div>
+                <div class="col-md-6">
+                  <b-form-datepicker
+                    v-model="endDate"
+                    :min="startDate"
+                    :max="maxDate"
+                    placeholder="End Date"
+                    class="w-100"
+                    @input="generateDateArray"
+                  ></b-form-datepicker>
+                </div>
+              </div>
+            </b-form-group>
+
+            <!-- Time selection for each date -->
+            <div v-if="fixedDateArray.length > 0" class="mt-4">
+              <h6 class="mb-3">Select Time Preference for Each Date:</h6>
+              <div v-for="date in fixedDateArray" :key="date" class="mb-3">
+                <label>{{ formatDate(date) }}</label>
+                <b-form-select 
+                  v-model="fixedDateOptions[date]" 
+                  :options="timeOptions"
+                  class="w-100"
+                ></b-form-select>
+              </div>
+            </div>
+          </div>
+
+          </div>
+          <div class="modal-footer">
+            <b-button variant="secondary" @click="closeChangeModal">Close</b-button>
+            <b-button variant="primary" @click="submitChange">Submit Change</b-button>
+          </div>
+        </div>
+      </div>
+    </div>
 
       <!-- Pending Withdrawal Applications Card (Manager View) -->
       <b-card v-if="activeTab === 'pending_withdrawal' && isManagerView" class="card mb-4">
@@ -223,7 +340,32 @@
         showWithdrawalModal: false,  // Controls whether the modal is visible
         withdrawalReason: '',        // Holds the reason for withdrawal
         selectedItem: null,          // Stores the application item to be withdrawn
-
+        fixedDateArray: [], //@ZIMING EVERYTHING BELOW HERE VUE DATA IS NEW FOR CHANGE FUNCTION
+        fixedDateOptions: {},
+        showChangeModal: false,
+        applicationType: 'fixed',
+        recurringDays: [],
+        dayOptions: {},
+        recurringStartDate: '',
+        recurringEndDate: '',
+        startDate: '',
+        endDate: '',
+        currentDate: new Date().toISOString().split('T')[0],
+        minDate: new Date().toISOString().split('T')[0],
+        maxDate: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+        daysOfWeek: [
+          { text: 'Monday', value: '1' },
+          { text: 'Tuesday', value: '2' },
+          { text: 'Wednesday', value: '3' },
+          { text: 'Thursday', value: '4' },
+          { text: 'Friday', value: '5' }
+        ],
+        timeOptions: [
+          { value: 'AM', text: 'AM' },
+          { value: 'PM', text: 'PM' },
+          { value: 'FULL', text: 'Full Day' }
+        ],
+        // @ZIMING UPDATED CHANGE
         fields: [
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Staff_Name", label: "Staff Name" },
@@ -233,6 +375,7 @@
           { key: "Reason", label: "Reason" },
           { key: "Decision", label: "Decision" },
           { key: "Withdraw", label: "Withdraw" },
+          { key: "Change", label: "Change" }
         ],
         fieldsr: [
           { key: "Staff_ID", label: "Staff ID" },
@@ -762,9 +905,94 @@
           this.selectedItem = null;
           this.withdrawalReason = '';
         },
+              openChangeModal(item) { // @!! ZIMING
+          this.selectedItem = item;
+          this.showChangeModal = true;
+        },
+        closeChangeModal() { // @!! ZIMING
+          this.showChangeModal = false;
+          this.resetChangeForm();
+        },
+        resetChangeForm() { // @!! ZIMING
+          this.applicationType = 'fixed';
+          this.recurringDays = [];
+          this.dayOptions = {};
+          this.recurringStartDate = '';
+          this.recurringEndDate = '';
+          this.startDate = '';
+          this.endDate = '';
+          this.fixedDateArray = [];
+          this.fixedDateOptions = {};
+        },
+        getDayName(value) { // @!! ZIMING
+          const day = this.daysOfWeek.find(d => d.value === value);
+          return day ? day.text : '';
+        },
+
+        generateDateArray() { // @!! ZIMING
+          if (this.startDate && this.endDate) {
+            this.fixedDateArray = [];
+            let currentDate = new Date(this.startDate);
+            const endDate = new Date(this.endDate);
+            
+            while (currentDate <= endDate) {
+              // Only include weekdays (Monday-Friday)
+              if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                this.fixedDateArray.push(dateStr);
+                
+                // Initialize time option if not already set
+                if (!this.fixedDateOptions[dateStr]) {
+                  this.fixedDateOptions[dateStr] = 'FULL';
+                }
+              }
+              currentDate.setDate(currentDate.getDate() + 1);
+            }
+          }
+        },
+
+        formatDate(dateStr) {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          });
+        },
+
+        // END OF METHODS HERE! for reference
       },
 
-
+      async submitChange() {
+        try {
+          const payload = {
+            originalApplication: this.selectedItem,
+            applicationType: this.applicationType,
+            ...(this.applicationType === 'recurring' 
+              ? {
+                  recurringDays: this.recurringDays,
+                  dayOptions: this.dayOptions,
+                  startDate: this.recurringStartDate,
+                  endDate: this.recurringEndDate
+                }
+              : {
+                  startDate: this.startDate,
+                  endDate: this.endDate,
+                  dateOptions: this.fixedDateOptions // Include the time preferences for each date
+                }
+            )
+          };
+          
+          // Make your API call here
+          // const response = await axios.post('your-endpoint', payload);
+          alert('Application change submitted successfully!');
+          this.closeChangeModal();
+        } catch (error) {
+          console.error('Error submitting change:', error);
+          alert('Failed to submit application change.');
+        }
+      },
 
     });
   </script>

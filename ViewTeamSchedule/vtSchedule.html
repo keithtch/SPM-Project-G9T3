@@ -75,9 +75,30 @@
         </button>
       </div>
 
+      <!-- View Toggle Buttons -->
+      <div class="mb-4 d-flex justify-content-center">
+        <div class="btn-group">
+          <button 
+            class="btn" 
+            :class="viewType === 'daily' ? 'btn-primary' : 'btn-outline-primary'"
+            @click="switchView('daily')"
+          >
+            Daily View
+          </button>
+          <button 
+            class="btn" 
+            :class="viewType === 'weekly' ? 'btn-primary' : 'btn-outline-primary'"
+            @click="switchView('weekly')"
+          >
+            Weekly View
+          </button>
+        </div>
+      </div>      
+
       <div :class="['mt-3', statusClass]">{{ statusMessage }}</div>
+      
       <!-- Team Data Section -->
-      <div class="card" v-if="teamData">
+      <div v-if="viewType === 'daily' && teamData" class="card">
         <div class="card-body">
           <h5 class="card-title text-center">{{filter}} Information</h5>
           <p><strong>{{filter}} Name:</strong> {{ currSelected }}</p>
@@ -184,6 +205,119 @@
         </div>
       </div>
 
+      <!-- Weekly View -->
+      <div v-if="viewType === 'weekly' && teamData" class="card">
+        <div class="card-body">
+          <h5 class="card-title text-center">Weekly {{filter}} Information</h5>
+          <p><strong>{{filter}} Name:</strong> {{ currSelected }}</p>
+          <p><strong>Total {{filter}} Members:</strong> {{ totalMembers }}</p>
+          <p><strong>Week of:</strong> {{ formatWeekRange }}</p>
+          <hr />
+          <div v-for="(daySchedule, date) in weeklySchedule" :key="date" class="mb-4">
+            <h6 class="text-center">{{ formatDate(date) }}</h6>
+            <!-- Staff Working in Office -->
+            <h6 class="text-center">Staff Working in Office</h6>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th class="time-period">AM (9am-1pm)</th>
+                  <th class="time-period">PM (2pm-6pm)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.office?.AM || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                  <td>
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.office?.PM || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                </tr>
+                <tr>
+                  <th class="time-period" colspan="2">Full Day (9am-6pm)</th>
+                </tr>
+                <tr>
+                  <td colspan="2">
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.office?.fullDay || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- Staff Working from Home -->
+            <h6 class="text-center">Staff Working from Home</h6>
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th class="time-period">AM (9am-1pm)</th>
+                  <th class="time-period">PM (2pm-6pm)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.wfh?.AM || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                  <td>
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.wfh?.PM || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                </tr>
+                <tr>
+                  <th class="time-period" colspan="2">Full Day (9am-6pm)</th>
+                </tr>
+                <tr>
+                  <td colspan="2">
+                    <ol class="staff-details">
+                      <li
+                        v-for="staff in daySchedule?.wfh?.fullDay || []"
+                        :key="staff.name"
+                      >
+                        [{{ staff.role }}] {{ staff.name }}
+                      </li>
+                    </ol>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <hr />
+          </div>
+        </div>
+      </div>
+
       <!-- Back to Home Page Button -->
       <div class="text-center mt-4">
         <b-button variant="primary" class="btn-primary" @click="goBack">
@@ -219,6 +353,8 @@
           totalMembers: "",
           totalWFH: 0,
           deptFlag: false,
+          viewType: 'daily',
+          weeklySchedule: {},
           schedule: {
             office: {
               AM: [],
@@ -232,7 +368,111 @@
             },
           },
         },
-        methods: {
+        computed: {
+          formatWeekRange() {  // @ZIMING
+            if (!this.selectedDate) return '';
+            const start = new Date(this.selectedDate);
+            start.setDate(start.getDate() - start.getDay() + 1); // Monday
+            const end = new Date(start);
+            end.setDate(end.getDate() + 4); // Friday
+            return `${this.formatDate(start)} - ${this.formatDate(end)}`;
+          }
+        },
+        methods: {  // @ZIMING
+          formatDate(date) {
+            const d = new Date(date);
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return `${days[d.getDay()]} (${d.toLocaleDateString()})`;
+          },
+          switchView(type) {  // @ZIMING
+            this.viewType = type;
+            if (type === 'weekly') {
+              this.fetchWeeklySchedule();
+            }
+          },
+
+          async fetchWeeklySchedule() {    // @ZIMING I CHATGPT-ED this, because i don't know how to fill this backend up
+            if (!this.selectedDate) return;
+            
+            // Get Monday of the selected week
+            const selectedDate = new Date(this.selectedDate);
+            const monday = new Date(selectedDate);
+            monday.setDate(selectedDate.getDate() - selectedDate.getDay() + 1);
+            
+            this.weeklySchedule = {};
+            
+            // Fetch data for Monday through Friday 
+            for (let i = 0; i < 5; i++) {
+              const currentDate = new Date(monday);
+              currentDate.setDate(monday.getDate() + i);
+              const formattedDate = currentDate.toISOString().split('T')[0];
+              
+              try {
+                if (this.deptFlag) {
+                  var currData = this.deptData;
+                  var selected = this.selectedDept;
+                } else {
+                  var currData = this.teamData;
+                  var selected = this.selectedTeam;
+                }
+
+                var idArr = [];
+                var tempEmp = {};
+                for (let employee of currData[selected]) {
+                  if (employee[0] != parseInt(this.staffID)) {
+                    idArr.push(employee[0]);
+                    tempEmp[employee[0]] = {
+                      role: employee[4],
+                      name: employee[1] + " " + employee[2],
+                    };
+                  }
+                }
+
+                const apps = await axios.post("http://localhost:5001/getApps", {
+                  ids: idArr,
+                  date: formattedDate,
+                  status: "Approved",
+                });
+
+                const dailySchedule = {
+                  office: {
+                    AM: [],
+                    PM: [],
+                    fullDay: [],
+                  },
+                  wfh: {
+                    AM: [],
+                    PM: [],
+                    fullDay: [],
+                  },
+                };
+
+                const applications = apps.data.results;
+                if (applications) {
+                  for (var app of applications) {
+                    if (app[2] == "AM") {
+                      dailySchedule.wfh.AM.push(tempEmp[app[0]]);
+                      dailySchedule.office.PM.push(tempEmp[app[0]]);
+                      delete tempEmp[app[0]];
+                    } else if (app[2] == "PM") {
+                      dailySchedule.wfh.PM.push(tempEmp[app[0]]);
+                      dailySchedule.office.AM.push(tempEmp[app[0]]);
+                      delete tempEmp[app[0]];
+                    }
+                  }
+                }
+
+                for (let key in tempEmp) {
+                  dailySchedule.office.fullDay.push(tempEmp[key]);
+                }
+
+                this.weeklySchedule[formattedDate] = dailySchedule;
+              } catch (error) {
+                console.error(`Failed to load schedule for ${formattedDate}`, error);
+              }
+            }
+          },
+
           toggleScheduleView() {
             this.deptFlag = !this.deptFlag;
           },
@@ -240,6 +480,9 @@
           async updateInfo() {
             console.log("test");
             this.flag = true;
+            if (this.viewType === 'weekly') {  // @!!! ZIMINGGGG
+              await this.fetchWeeklySchedule();  // @ZIMING
+            } else {
             if (
               (this.selectedTeam && this.selectedDate && !this.deptFlag) ||
               (this.selectedDept && this.selectedDate && this.deptFlag)
@@ -327,6 +570,7 @@
               this.statusMessage = "Please select both a team and a date.";
               this.statusClass = "text-warning";
             }
+          }
             this.flag = false;
           },
 
@@ -362,6 +606,15 @@
             console.log(this.minDate, this.maxDate);
           },
         },
+
+        watch: {   // @!!!ZIMING
+          selectedDate() {
+            if (this.viewType === 'weekly') {
+              this.fetchWeeklySchedule();
+            }
+          }
+        },
+
         async mounted() {
           this.setDateLimits();
           this.updateInfo();
