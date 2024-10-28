@@ -101,7 +101,7 @@
             <b-button :disabled="!data.item.withdrawable" variant="danger" @click="withdraw(data.item)">Withdraw</b-button>
           </template>
           <template v-slot:cell(Change)="data">
-            <b-button variant="warning" @click="openChangeModal(data.item)">Change</b-button>
+            <b-button :disabled="!data.item.withdrawable" variant="warning" @click="openChangeModal(data.item)">Change</b-button>
           </template>
         </b-table>
         <div v-else>
@@ -125,79 +125,17 @@
             </button>
           </div>
           <div class="modal-body">
-            <b-form-group label="Select your WFH Application Type" label-for="application-type" class="form-group">
-              <b-form-radio-group
-                id="application-type"
-                v-model="applicationType"
-                :options="[{
-                  text: 'Recurring Application',
-                  value: 'recurring'
-                }, {
-                  text: 'Fixed Period Application',
-                  value: 'fixed'
-                }]"
-                name="application-type"
-                class="transition-fade"
-              ></b-form-radio-group>
-            </b-form-group>
-
-            <!-- Recurring Application Options -->
-            <div v-if="applicationType === 'recurring'" class="transition-fade fade-in">
-              <b-form-group label="Select Days for Recurring Application" class="form-group">
-                <b-form-checkbox-group v-model="recurringDays" :options="daysOfWeek"></b-form-checkbox-group>
-              </b-form-group>
-
-              <div v-for="day in recurringDays" :key="day" class="mb-3">
-                <label>{{ getDayName(day) }}</label>
-                <b-form-select v-model="dayOptions[day]" :options="timeOptions"></b-form-select>
-              </div>
-
-              <b-form-group label="Select Recurring Date Range" class="form-group">
-                <div class="row">
-                  <div class="col-md-6">
-                    <b-form-datepicker
-                      v-model="recurringStartDate"
-                      :today="currentDate"
-                      :min="minDate"
-                      :max="maxDate"
-                      placeholder="Start Date"
-                      class="w-100"
-                    ></b-form-datepicker>
-                  </div>
-                  <div class="col-md-6">
-                    <b-form-datepicker
-                      v-model="recurringEndDate"
-                      :min="recurringStartDate"
-                      :max="maxDate"
-                      placeholder="End Date"
-                      class="w-100"
-                    ></b-form-datepicker>
-                  </div>
-                </div>
-              </b-form-group>
-            </div>
-
           <!-- Fixed Period Application -->
           <div v-if="applicationType === 'fixed'" class="transition-fade fade-in">
             <b-form-group label="Select Date Range for Fixed Period Application" class="form-group">
               <div class="row">
                 <div class="col-md-6">
                   <b-form-datepicker
-                    v-model="startDate"
+                    v-model="changeDate"
                     :today="currentDate"
                     :min="minDate"
                     :max="maxDate"
-                    placeholder="Start Date"
-                    class="w-100"
-                    @input="generateDateArray"
-                  ></b-form-datepicker>
-                </div>
-                <div class="col-md-6">
-                  <b-form-datepicker
-                    v-model="endDate"
-                    :min="startDate"
-                    :max="maxDate"
-                    placeholder="End Date"
+                    placeholder="Date"
                     class="w-100"
                     @input="generateDateArray"
                   ></b-form-datepicker>
@@ -347,7 +285,7 @@
         dayOptions: {},
         recurringStartDate: '',
         recurringEndDate: '',
-        startDate: '',
+        changeDate: '',
         endDate: '',
         currentDate: new Date().toISOString().split('T')[0],
         minDate: new Date().toISOString().split('T')[0],
@@ -904,15 +842,15 @@
           this.selectedItem = null;
           this.withdrawalReason = '';
         },
-              openChangeModal(item) { // @!! ZIMING
+              openChangeModal(item) {
           this.selectedItem = item;
           this.showChangeModal = true;
         },
-        closeChangeModal() { // @!! ZIMING
+        closeChangeModal() { 
           this.showChangeModal = false;
           this.resetChangeForm();
         },
-        resetChangeForm() { // @!! ZIMING
+        resetChangeForm() {
           this.applicationType = 'fixed';
           this.recurringDays = [];
           this.dayOptions = {};
@@ -923,12 +861,12 @@
           this.fixedDateArray = [];
           this.fixedDateOptions = {};
         },
-        getDayName(value) { // @!! ZIMING
+        getDayName(value) { 
           const day = this.daysOfWeek.find(d => d.value === value);
           return day ? day.text : '';
         },
 
-        generateDateArray() { // @!! ZIMING
+        generateDateArray() { 
           if (this.startDate && this.endDate) {
             this.fixedDateArray = [];
             let currentDate = new Date(this.startDate);
@@ -959,32 +897,24 @@
             day: 'numeric'
           });
         },
-
-        // END OF METHODS HERE! for reference
-      },
-
-      async submitChange() {
+        async submitChange() {
         try {
-          const payload = {
-            originalApplication: this.selectedItem,
-            applicationType: this.applicationType,
-            ...(this.applicationType === 'recurring' 
-              ? {
-                  recurringDays: this.recurringDays,
-                  dayOptions: this.dayOptions,
-                  startDate: this.recurringStartDate,
-                  endDate: this.recurringEndDate
-                }
-              : {
-                  startDate: this.startDate,
-                  endDate: this.endDate,
-                  dateOptions: this.fixedDateOptions // Include the time preferences for each date
-                }
-            )
-          };
-          
-          // Make your API call here
-          // const response = await axios.post('your-endpoint', payload);
+          const response = await axios.post('http://localhost:5001/changeApplication', {
+            Staff_ID: this.selectedItem.Staff_ID,
+            Date_Applied: this.selectedItem.Date_Applied,
+            Time_Of_Day: this.selectedItem.Time_Of_Day,
+            changeDate: this.changeDate
+          });
+          if (response.data.status === 'success') {
+            this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
+                app =>
+                  !(
+                    app.Staff_ID === this.selectedItem.Staff_ID &&
+                    app.Date_Applied === this.selectedItem.Date_Applied &&
+                    app.Time_Of_Day === this.selectedItem.Time_Of_Day
+                  )
+            );
+          }
           alert('Application change submitted successfully!');
           this.closeChangeModal();
         } catch (error) {
@@ -992,6 +922,10 @@
           alert('Failed to submit application change.');
         }
       },
+        // END OF METHODS HERE! for reference
+      },
+
+      
 
     });
   </script>
