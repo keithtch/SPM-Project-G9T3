@@ -59,3 +59,21 @@ body {
   .manager-view {
     background-color: #dc3545; 
   }
+  .modal {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  .modal-dialog {
+    max-width: 600px;
+  }
+  .transition-fade {
+    transition: all 0.3s ease;
+  }
+  .fade-in {
+    opacity: 1;
+  }
+  .modal-body {
+    padding: 1.5rem;
+  }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }

@@ -125,46 +125,45 @@
             </button>
           </div>
           <div class="modal-body">
-          <!-- Fixed Period Application -->
-          <div v-if="applicationType === 'fixed'" class="transition-fade fade-in">
-            <b-form-group label="Select Date Range for Fixed Period Application" class="form-group">
-              <div class="row">
-                <div class="col-md-6">
-                  <b-form-datepicker
-                    v-model="changeDate"
-                    :today="currentDate"
-                    :min="minDate"
-                    :max="maxDate"
-                    placeholder="Date"
-                    class="w-100"
-                    @input="generateDateArray"
-                  ></b-form-datepicker>
+            <!-- Fixed Period Application -->
+            <div class="transition-fade fade-in">
+              <b-form-group label="Select New Date" class="form-group">
+                <div class="row">
+                  <div class="col-12">
+                    <b-form-datepicker
+                      v-model="changeDate"
+                      :today="currentDate"
+                      :min="minDate"
+                      :max="maxDate"
+                      placeholder="Select date"
+                      class="mb-3 w-100"
+                    ></b-form-datepicker>
+                  </div>
                 </div>
-              </div>
-            </b-form-group>
+              </b-form-group>
 
-            <!-- Time selection for each date -->
-            <div v-if="fixedDateArray.length > 0" class="mt-4">
-              <h6 class="mb-3">Select Time Preference for Each Date:</h6>
-              <div v-for="date in fixedDateArray" :key="date" class="mb-3">
-                <label>{{ formatDate(date) }}</label>
-                <b-form-select 
-                  v-model="fixedDateOptions[date]" 
-                  :options="timeOptions"
+              <!-- Reason textbox -->
+              <b-form-group label="Reason for Change">
+                <b-form-textarea
+                  v-model="changeReason"
+                  placeholder="Enter reason for change"
+                  rows="3"
+                  max-rows="3"
+                  :maxlength="50"
                   class="w-100"
-                ></b-form-select>
-              </div>
+                ></b-form-textarea>
+                <small class="text-muted">{{ changeReason ? changeReason.length : 0 }}/50 characters</small>
+              </b-form-group>
             </div>
-          </div>
-
           </div>
           <div class="modal-footer">
             <b-button variant="secondary" @click="closeChangeModal">Close</b-button>
-            <b-button variant="primary" @click="submitChange">Submit Change</b-button>
+            <b-button variant="primary" @click="submitChange" :disabled="!isChangeValid">Submit Change</b-button>
           </div>
         </div>
       </div>
     </div>
+
 
       <!-- Pending Withdrawal Applications Card (Manager View) -->
       <b-card v-if="activeTab === 'pending_withdrawal' && isManagerView" class="card mb-4">
@@ -286,6 +285,7 @@
         recurringStartDate: '',
         recurringEndDate: '',
         changeDate: '',
+        changeReason: '',
         endDate: '',
         currentDate: new Date().toISOString().split('T')[0],
         minDate: new Date().toISOString().split('T')[0],
@@ -350,6 +350,11 @@
         },
         pageTitle() {
           return this.isManagerView ? 'Manage Team WFH Applications' : 'Manage My WFH Applications';
+        },
+        isChangeValid() {
+          return this.changeDate && 
+                this.changeReason && 
+                this.changeReason.length <= 50;
         },
       },
 
@@ -842,23 +847,21 @@
           this.selectedItem = null;
           this.withdrawalReason = '';
         },
-              openChangeModal(item) {
+
+      openChangeModal(item) {
           this.selectedItem = item;
           this.showChangeModal = true;
+          this.changeDate = '';
+          this.changeReason = '';
+          this.fixedDateOptions = {};
         },
         closeChangeModal() { 
           this.showChangeModal = false;
           this.resetChangeForm();
         },
         resetChangeForm() {
-          this.applicationType = 'fixed';
-          this.recurringDays = [];
-          this.dayOptions = {};
-          this.recurringStartDate = '';
-          this.recurringEndDate = '';
-          this.startDate = '';
-          this.endDate = '';
-          this.fixedDateArray = [];
+          this.changeDate = '';
+          this.changeReason = '';
           this.fixedDateOptions = {};
         },
         getDayName(value) { 
@@ -898,30 +901,34 @@
           });
         },
         async submitChange() {
-        try {
-          const response = await axios.post('http://localhost:5001/changeApplication', {
-            Staff_ID: this.selectedItem.Staff_ID,
-            Date_Applied: this.selectedItem.Date_Applied,
-            Time_Of_Day: this.selectedItem.Time_Of_Day,
-            changeDate: this.changeDate
-          });
-          if (response.data.status === 'success') {
-            this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
-                app =>
-                  !(
-                    app.Staff_ID === this.selectedItem.Staff_ID &&
-                    app.Date_Applied === this.selectedItem.Date_Applied &&
-                    app.Time_Of_Day === this.selectedItem.Time_Of_Day
-                  )
-            );
+          try {
+            const response = await axios.post('http://localhost:5001/changeApplication', {
+              Staff_ID: this.selectedItem.Staff_ID,
+              Date_Applied: this.selectedItem.Date_Applied,
+              Time_Of_Day: this.selectedItem.Time_Of_Day,
+              changeDate: this.changeDate,
+              changeTimeOfDay: this.selectedItem.Time_Of_Day, 
+              changeReason: this.changeReason
+            });
+            
+            if (response.data.status === 'success') {
+              this.ownApplications['Approved'] = this.ownApplications['Approved'].filter(
+                app => !(
+                  app.Staff_ID === this.selectedItem.Staff_ID &&
+                  app.Date_Applied === this.selectedItem.Date_Applied &&
+                  app.Time_Of_Day === this.selectedItem.Time_Of_Day
+                )
+              );
+              alert('Application change submitted successfully!');
+              this.closeChangeModal();
+            } else {
+              alert('Failed to submit application change: ' + response.data.message);
+            }
+          } catch (error) {
+            console.error('Error submitting change:', error);
+            alert('Failed to submit application change.');
           }
-          alert('Application change submitted successfully!');
-          this.closeChangeModal();
-        } catch (error) {
-          console.error('Error submitting change:', error);
-          alert('Failed to submit application change.');
-        }
-      },
+        },
         // END OF METHODS HERE! for reference
       },
 
