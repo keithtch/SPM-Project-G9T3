@@ -220,7 +220,7 @@
 
               while (currentDate <= end) {
                 if (this.recurringDays.includes(currentDate.getDay())) {
-                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],this.dayOptions[currentDate.getDay()],this.manager,'Pending',this.wfhReason]);
+                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],this.dayOptions[currentDate.getDay()],this.manager,'Pending',this.wfhReason, this.recurringStartDate,this.recurringEndDate,this.applicationType]);
                 }
                 currentDate.setDate(currentDate.getDate() + 1);
               }
@@ -237,7 +237,7 @@
 
               while (currentDate <= end) {
                 var time_of_day = this.dateOptions[currentDate.toISOString().split('T')[0]]
-                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0],time_of_day, this.manager, 'Pending', this.wfhReason]);
+                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0],time_of_day, this.manager, 'Pending', this.wfhReason, this.startDate,this.endDate,this.applicationType]);
                 currentDate.setDate(currentDate.getDate() + 1);
               }
             }
