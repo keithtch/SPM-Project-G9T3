@@ -59,30 +59,30 @@ def updateDates():
     try:
         with connection.cursor() as cursor:
             for entry in dates:
-                if entry[-1] == 'recurring':
-                    application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date,Recurring_ID)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-                    cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6],entry[7],current_recurring_id))
+                if entry[8] == 'recurring':
+                    application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date,Recurring_ID, Recurring_Day)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                    cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6],entry[7],current_recurring_id, entry[9]))
                     connection.commit()
                     print('application success')
 
                     log_query="""
-                        INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date,Recurring_ID) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date,Recurring_ID, Recurring_Day) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """
-                    cursor.execute(log_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6],entry[7],current_recurring_id))
+                    cursor.execute(log_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6],entry[7],current_recurring_id,entry[9]))
                     connection.commit()
                     print('application success logged')
                 else:
-                    application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
-                    cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[6],entry[7],))
+                    application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date, Recurring_Day)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                    cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[1],entry[1],entry[9]))
                     connection.commit()
                     print('application success')
 
                     log_query="""
-                        INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date) VALUES (%s,%s,%s,%s,%s,%s, %s, %s)
+                        INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date, Recurring_Day) VALUES (%s,%s,%s,%s,%s,%s, %s, %s, %s)
                     """
-                    cursor.execute(log_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5], entry[6], entry[7]))
+                    cursor.execute(log_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5], entry[1], entry[1],entry[8]))
                     connection.commit()
                     print('application success logged')
 

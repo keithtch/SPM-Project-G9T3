@@ -160,11 +160,12 @@
         ],
         recurringStartDate: null, // start date for recurring
         recurringEndDate: null, // end date for recurring
+        recurring_day: null,
         startDate: null, // start date for fixed period
         endDate: null, // end date for fixed period
         currentDate: new Date().toISOString().split("T")[0], // current date 
         minDate: '',
-        maxDate: ''
+        maxDate: '',
       },
       
       watch: {
@@ -182,7 +183,8 @@
 
       methods: {
         getDayName(dayValue) {
-          return this.daysOfWeek.find(day => day.value === dayValue).text;
+          this.recurring_day=this.daysOfWeek.find(day => day.value === dayValue).text
+          return this.recurring_day ;
         },
         updateDateArray() {
           this.dateArray = [];
@@ -220,7 +222,7 @@
 
               while (currentDate <= end) {
                 if (this.recurringDays.includes(currentDate.getDay())) {
-                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],this.dayOptions[currentDate.getDay()],this.manager,'Pending',this.wfhReason, this.recurringStartDate,this.recurringEndDate,this.applicationType]);
+                  this.dateArray.push([this.staffID,currentDate.toISOString().split('T')[0],this.dayOptions[currentDate.getDay()],this.manager,'Pending',this.wfhReason, this.recurringStartDate,this.recurringEndDate,this.applicationType,this.recurring_day]);
                 }
                 currentDate.setDate(currentDate.getDate() + 1);
               }
@@ -237,7 +239,8 @@
 
               while (currentDate <= end) {
                 var time_of_day = this.dateOptions[currentDate.toISOString().split('T')[0]]
-                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0],time_of_day, this.manager, 'Pending', this.wfhReason, this.startDate,this.endDate,this.applicationType]);
+                var day = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+                this.dateArray.push([this.staffID, currentDate.toISOString().split('T')[0],time_of_day, this.manager, 'Pending', this.wfhReason,currentDate.toISOString().split('T')[0],currentDate.toISOString().split('T')[0],this.applicationType,day]);
                 currentDate.setDate(currentDate.getDate() + 1);
               }
             }
