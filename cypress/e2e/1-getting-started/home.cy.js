@@ -49,7 +49,7 @@ describe('Work From Home Management System (WFHMS)', () => {
       localStorage.setItem("staffID", "160008"); // Replace with an actual HR user ID
       cy.reload(); // Reload the page to apply changes
       // Check if the HR records access button is visible
-      cy.get('.btn btn-warning w-100 action-btn logout-btn').contains('HR Records Access - HR Personnel Only').should('be.visible');
+      cy.get('.btn.btn-warning.w-100.action-btn.logout-btn').contains('HR Records Access - HR Personnel Only').should('be.visible');
     });
   
     it('should log out and redirect to login page', () => {
