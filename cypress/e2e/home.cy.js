@@ -34,7 +34,7 @@ describe('Work From Home Management System (WFHMS)', () => {
   
     it('should navigate to view own schedule', () => {
       // Wait for loading to finish and click the own schedule button
-      cy.get('.schedule-btn').click();
+      cy.get('.btn.btn-info.w-100.action-btn.schedule-btn').click();
       cy.url().should('include', 'http://localhost/SPM-Project-G9T3/ViewOwnSchedule/voSchedule.html');
     });
   
