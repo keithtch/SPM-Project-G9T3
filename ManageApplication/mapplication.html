@@ -567,6 +567,7 @@
                 }
               }
             }
+            console.log(item)
             console.log(item.Staff_ID, item.Date_Applied, item.Time_Of_Day)
             const response = await axios.post('http://localhost:5001/approveApplication', {
               Staff_ID: item.Staff_ID,
