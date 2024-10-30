@@ -34,7 +34,7 @@ def apply():
     finally:
         connection.close()
         
-def retrieve_recurring_ID():
+def retrieve_highest_recurring_ID():
     connection = get_db_connection()
     try: 
         with connection.cursor() as cursor:
@@ -50,9 +50,9 @@ def retrieve_recurring_ID():
 
 @app.route('/updateDates',methods=['POST'])
 def updateDates():
-    data = request.get_json()
+    data = request.get_json( )
     dates = data.get('dates')
-    highest_recurring_id= int(retrieve_recurring_ID())
+    highest_recurring_id= int(retrieve_highest_recurring_ID())
     current_recurring_id = highest_recurring_id + 1
     print(dates)
     connection = get_db_connection()
@@ -191,7 +191,17 @@ def withdrawApplication():
     finally:
         connection.close()
 
-
+def get_recurring_ID(a,b,c):
+    connection = get_db_connection()
+    try: 
+        with connection.cursor() as cursor:
+            retrieval = "Select Recurring_ID from Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s"
+            cursor.execute(retrieval,(a,b,c))
+            result = cursor.fetchone()
+            print(result[0])
+            return result[0]
+    finally:
+        connection.close() 
 
 # Once the manager approves the application, the status of the application will be updated to 'Approved'      
 # AMQP send message to exchange to publish message upon manager's approval
@@ -201,17 +211,27 @@ def approveApplication():
     staff_id = data.get('Staff_ID')
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
+    recurring_id = get_recurring_ID(staff_id,date_applied,time_of_day)
 
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            query = """
-                UPDATE Application
-                SET Status_Of_Application = 'Approved'
-                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
-            """
-            cursor.execute(query, (staff_id, date_applied, time_of_day))
-            connection.commit()
+            if recurring_id is not None:
+                query = """
+                    UPDATE Application
+                    SET Status_Of_Application = 'Approved'
+                    WHERE Recurring_ID = %s
+                """
+                cursor.execute(query, (recurring_id))
+                connection.commit()
+            else:
+                query = """
+                    UPDATE Application
+                    SET Status_Of_Application = 'Approved'
+                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+                """
+                cursor.execute(query, (staff_id, date_applied, time_of_day))
+                connection.commit()
             
            
             # Retrieve the employee's email address
@@ -278,17 +298,27 @@ def rejectApplication():
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
     rejection_reason = data.get('Rejection_Reason')
+    recurring_id = get_recurring_ID(staff_id,date_applied,time_of_day)
     
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            query = """
-                UPDATE Application
-                SET Status_Of_Application = 'Rejected', Manager_Reason = %s
-                WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
-            """
-            cursor.execute(query, (rejection_reason, staff_id, date_applied, time_of_day))
-            connection.commit()
+            if recurring_id is not None:
+                query = """
+                    UPDATE Application
+                    SET Status_Of_Application = 'Rejected', Manager_Reason = %s
+                    WHERE Recurring_ID = %s
+                """
+                cursor.execute(query, (rejection_reason,recurring_id))
+                connection.commit()
+            else:
+                query = """
+                    UPDATE Application
+                    SET Status_Of_Application = 'Rejected', Manager_Reason = %s
+                    WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+                """
+                cursor.execute(query, (rejection_reason, staff_id, date_applied, time_of_day))
+                connection.commit()
             
              # Retrieve the employee's email address
             cursor.execute("SELECT Email FROM Employee WHERE Staff_ID = %s", (staff_id,))
