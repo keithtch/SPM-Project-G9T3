@@ -343,6 +343,8 @@
         totalWFH: '',
         withdrawalReason: null,
         filteredDate: '',
+        teamRecurringIDs: {},
+        ownRecurringIDs: {},
       },
       computed: {
         percentageWFH() {
@@ -432,14 +434,25 @@
                 const staffID = entry[0]
                 const staffInd = this.findId(staffID, this.dataArr)
                 const startDate = entry[1]
+                if (entry[7]) {
+                  if (Number(entry[7]) in this.teamRecurringIDs) {
+                    continue
+                  }
+                    var shownDate = entry[5] + ' to ' + entry[6] + ' (' + entry[8] + ')'
+                    console.log(shownDate)
+                    this.teamRecurringIDs[entry[7]] = true
+                } else {
+                  var shownDate = startDate
+                }
+
                 this.teamApplications[entry[3]].push({
                   Staff_ID: staffID,
                   Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
-                  Date_Applied: startDate,
+                  Date_Applied: shownDate,
                   Time_Of_Day: entry[2],
                   Status_Of_Application: entry[3],
                   Reason: entry[4],
-                  Decision: entry[5]
+                  Decision: entry[9]
                 })
                 if (entry[3] == 'Approved') {
                   if (!this.tempApproveCount[startDate]) {
@@ -492,10 +505,21 @@
                     }
                   }
 
+                  if (entry[10]) {
+                  if (Number(entry[10]) in this.ownRecurringIDs) {
+                    continue
+                  }
+                    var shownDate = entry[8] + ' to ' + entry[9] + ' (' + entry[11] + ')'
+                    console.log(shownDate)
+                    this.ownRecurringIDs[entry[10]] = true
+                } else {
+                  var shownDate = entry[1]
+                }
+
                   this.ownApplications[entry[4]].push({
                     Staff_ID: this.staffID,
                     Staff_Name: this.dataArr[staffInd][1] + ' ' + this.dataArr[staffInd][2],
-                    Date_Applied: entry[1],
+                    Date_Applied: shownDate,
                     Time_Of_Day: entry[2],
                     Status_Of_Application: entry[4],
                     Reason: entry[5],
@@ -546,6 +570,11 @@
             this.isManagerView = False
           }
           else {
+            if (this.isManagerView) {
+              this.fields.push({ key: "Change", label: "Change" })
+            } else {
+              this.fields.pop()
+            }
             this.isManagerView = !this.isManagerView
           }
         },

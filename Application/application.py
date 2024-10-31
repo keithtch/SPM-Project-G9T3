@@ -7,6 +7,7 @@ import smtplib
 import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
@@ -131,7 +132,7 @@ def getTeamApplications():
         with connection.cursor() as cursor:
             # SQL Query: Join Employee and Application tables to get subordinates' applications
             query = """
-                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason, a.Start_Date, a.End_Date, a.Recurring_ID, a.recurring_day, a.manager_reason
                 FROM Employee e
                 JOIN Application a ON e.Staff_ID = a.Staff_ID
                 WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
@@ -207,22 +208,56 @@ def get_recurring_ID(a,b,c):
 # AMQP send message to exchange to publish message upon manager's approval
 @app.route('/approveApplication', methods=['POST'])
 def approveApplication():
+    
     data = request.get_json()
     staff_id = data.get('Staff_ID')
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
-    recurring_id = get_recurring_ID(staff_id,date_applied,time_of_day)
+    dayToNum = {'Monday': 0, 'Tuesday': 1, 'Wednesday':2, 'Thursday':3, 'Friday':4, 'Saturday':5, 'Sunday':6}
+
+
+    if len(date_applied) > 15:
+        start, end = date_applied.split(' to ')
+        end, day = end.split(' ')
+        day = dayToNum[day[1:-1]]
+        print(start,end,day)
+        date_applied = start
 
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            select_query = """
+                SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+                """
+            print(staff_id,date_applied,time_of_day)
+            cursor.execute(select_query, (staff_id, date_applied, time_of_day))
+            application = cursor.fetchone()
+            recurring_id = application[10]
+            print(recurring_id)
             if recurring_id is not None:
-                query = """
-                    UPDATE Application
-                    SET Status_Of_Application = 'Approved'
+                delete_query = """
+                    DELETE FROM Application
                     WHERE Recurring_ID = %s
                 """
-                cursor.execute(query, (recurring_id))
+                cursor.execute(delete_query, (recurring_id))
+                start_date = datetime.strptime(start, "%Y-%m-%d")
+                end_date = datetime.strptime(end, "%Y-%m-%d")
+
+                dates = []
+                current = start_date + timedelta((day-start_date.weekday() + 7) % 7)
+
+                while current <= end_date:
+                    print(current)
+                    dates.append(current.strftime("%Y-%m-%d"))
+                    current += timedelta(days=7)
+                
+                print(dates)
+                for date in dates:
+                    query = """
+                        INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                    """
+                    cursor.execute(query, (application[0],date,application[2],application[3],'Approved',application[5],date,date))
                 connection.commit()
             else:
                 query = """
