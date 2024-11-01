@@ -214,10 +214,11 @@
             if (this.recurringStartDate && this.recurringEndDate && this.selectedDay && this.selectedTimeOption) {
               let currentDate = new Date(this.recurringStartDate);
               const end = new Date(this.recurringEndDate);
+              //console.log(currentDate.getDay(), this.selectedDay)
 
-              while (currentDate <= end) {
-                if (currentDate.getDay() === this.selectedDay.value) {
-                  const dayName = this.getDayName(this.selectedDay.value);
+
+                if (currentDate.getDay() === this.selectedDay) {
+                  const dayName = this.getDayName(this.selectedDay);
                   this.dateArray.push([
                     this.staffID,
                     currentDate.toISOString().split('T')[0],
@@ -230,7 +231,7 @@
                     this.applicationType,
                     dayName
                   ]);
-                }
+                
                 currentDate.setDate(currentDate.getDate() + 1);
               }
             }
