@@ -93,6 +93,7 @@ def test_withdrawApplication(client, mocker):
     assert response.status_code == 200
     assert response.json['status'] == 'success'
 
+
 def test_approveApplication(client, mocker):
     # Mock the database connection and cursor
     mock_connection = mocker.Mock()
@@ -100,14 +101,87 @@ def test_approveApplication(client, mocker):
     mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
-    mock_cursor.fetchone = mocker.Mock(return_value=['test@example.com'])
+    # Adjust the return value to match the expected structure
+    mock_cursor.fetchone = mocker.Mock(side_effect=[
+        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        ['test@example.com']  # Employee email
+    ])
     mock_connection.cursor.return_value = mock_cursor
     mock_connection.commit = mocker.Mock()
     mocker.patch('application.get_db_connection', return_value=mock_connection)
-    
+
     # Mock the get_recurring_ID function
     mocker.patch('application.get_recurring_ID', return_value=1)
-    
+
+    # Mock the email sending part
+    mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
+    mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
+    mock_smtp_instance.sendmail = mocker.Mock()
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01 to 2023-01-07 (Monday)',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 200
+    assert response.json['status'] == 'success'
+    mock_cursor.execute.assert_called()
+    mock_connection.commit.assert_called()
+    mock_smtp_instance.sendmail.assert_called()
+
+def test_approveApplication_with_recurring_id(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(side_effect=[
+        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        ['test@example.com']  # Employee email
+    ])
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    # Mock the get_recurring_ID function
+    mocker.patch('application.get_recurring_ID', return_value=1)
+
+    # Mock the email sending part
+    mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
+    mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
+    mock_smtp_instance.sendmail = mocker.Mock()
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01 to 2023-01-07 (Monday)',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 200
+    assert response.json['status'] == 'success'
+    mock_cursor.execute.assert_called()
+    mock_connection.commit.assert_called()
+    mock_smtp_instance.sendmail.assert_called()
+
+def test_approveApplication_without_recurring_id(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(side_effect=[
+        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', None],  # Application data
+        ['test@example.com']  # Employee email
+    ])
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
     # Mock the email sending part
     mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
     mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
@@ -119,12 +193,151 @@ def test_approveApplication(client, mocker):
         'Time_Of_Day': 'AM'
     }
     response = client.post('/approveApplication', json=data)
-    
+
     assert response.status_code == 200
     assert response.json['status'] == 'success'
     mock_cursor.execute.assert_called()
     mock_connection.commit.assert_called()
     mock_smtp_instance.sendmail.assert_called()
+
+def test_approveApplication_with_invalid_data(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(return_value=None)
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    data = {
+        'Staff_ID': 'invalid',  # Invalid data type
+        'Date_Applied': '2023-01-01',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 400  # Bad Request
+    assert response.json['message'] == 'Invalid Staff_ID'
+
+def test_approveApplication_with_missing_data(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(return_value=None)
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01'
+        # Missing 'Time_Of_Day'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 400  # Bad Request
+    assert response.json['message'] == 'Missing required data'
+
+def test_approveApplication_with_database_error(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock(side_effect=Exception('Database error'))
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 500
+    assert response.json['status'] == 'error'
+    assert 'Failed' in response.json['message']
+
+def test_approveApplication_with_email_error(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(side_effect=[
+        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        ['test@example.com']  # Employee email
+    ])
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    # Mock the get_recurring_ID function
+    mocker.patch('application.get_recurring_ID', return_value=1)
+
+    # Mock the email sending part and simulate an error
+    mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
+    mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
+    mock_smtp_instance.sendmail = mocker.Mock(side_effect=Exception('Email error'))
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 200
+    assert response.json['status'] == 'success'
+    mock_cursor.execute.assert_called()
+    mock_connection.commit.assert_called()
+    mock_smtp_instance.sendmail.assert_called()
+
+def test_approveApplication_with_no_email(client, mocker):
+    # Mock the database connection and cursor
+    mock_connection = mocker.Mock()
+    mock_cursor = mocker.Mock()
+    mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+    mock_cursor.__exit__ = mocker.Mock(return_value=False)
+    mock_cursor.execute = mocker.Mock()
+    mock_cursor.fetchone = mocker.Mock(side_effect=[
+        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        None  # No email found
+    ])
+    mock_connection.cursor.return_value = mock_cursor
+    mock_connection.commit = mocker.Mock()
+    mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+    # Mock the get_recurring_ID function
+    mocker.patch('application.get_recurring_ID', return_value=1)
+
+    # Mock the email sending part
+    mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
+    mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
+    mock_smtp_instance.sendmail = mocker.Mock()
+
+    data = {
+        'Staff_ID': 1,
+        'Date_Applied': '2023-01-01',
+        'Time_Of_Day': 'AM'
+    }
+    response = client.post('/approveApplication', json=data)
+
+    assert response.status_code == 200
+    assert response.json['status'] == 'success'
+    mock_cursor.execute.assert_called()
+    mock_connection.commit.assert_called()
+    mock_smtp_instance.sendmail.assert_not_called()  # Ensure no email is sent
+
 
 def test_rejectApplication(client, mocker):
     # Mock the database connection and cursor

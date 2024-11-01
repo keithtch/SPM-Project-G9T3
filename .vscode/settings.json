@@ -3,5 +3,9 @@
         "Application"
     ],
     "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": true,
+    "open-php-html-js-in-browser.selectedBrowser": "Chrome",
+    "open-php-html-js-in-browser.urlToOpen": "http://localhost/",
+    "open-php-html-js-in-browser.customHost": "localhost",
+    "open-php-html-js-in-browser.documentRootFolder": "C://wamp64/www"
 }

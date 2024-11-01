@@ -316,7 +316,14 @@ def approveApplication():
     time_of_day = data.get('Time_Of_Day')
     dayToNum = {'Monday': 0, 'Tuesday': 1, 'Wednesday':2, 'Thursday':3, 'Friday':4, 'Saturday':5, 'Sunday':6}
 
+    # Validate input data
+    if not staff_id or not date_applied or not time_of_day:
+        return jsonify({"status": "error", "message": "Missing required data"}), 400
 
+    if not isinstance(staff_id, int):
+        return jsonify({"status": "error", "message": "Invalid Staff_ID"}), 400
+
+    start = end = day = None #Initialise variables
     if len(date_applied) > 15:
         start, end = date_applied.split(' to ')
         end, day = end.split(' ')
@@ -325,6 +332,7 @@ def approveApplication():
         date_applied = start
 
     connection = get_db_connection()
+
     try:
         with connection.cursor() as cursor:
             select_query = """
@@ -333,9 +341,12 @@ def approveApplication():
             print(staff_id,date_applied,time_of_day)
             cursor.execute(select_query, (staff_id, date_applied, time_of_day))
             application = cursor.fetchone()
+            if not application:
+                return jsonify({"status": "error", "message": "Application not found"}), 404 #Return error if application not found
+            
             recurring_id = application[10]
             print(recurring_id)
-            if recurring_id is not None:
+            if recurring_id is not None and start and end and day is not None: #Variable check for start,end and day.
                 delete_query = """
                     DELETE FROM Application
                     WHERE Recurring_ID = %s
