@@ -384,7 +384,7 @@
 
         async getrole() {
           try {
-            const response = await fetch("http://localhost:5000/employee");
+            const response = await fetch("http://localhost:5001/employee");
             const returnedJSON = await response.json();
             console.log(returnedJSON);
 
@@ -403,7 +403,7 @@
 
 
         async getteam() {
-          const team = await axios.post('http://localhost:5000/findTeam/' + this.staffID)
+          const team = await axios.post('http://localhost:5001/findTeam/' + this.staffID)
           var teamResult = team.data.employees
           this.teamData = teamResult
           console.log(this.teamData)
@@ -669,7 +669,7 @@
         },
 
         findstaffid(item) {
-          fetch('http://localhost:5000/employee')
+          fetch('http://localhost:5001/employee')
             .then(response => response.json())
             .then(returnedJSON => {
               dataArr = returnedJSON.data;

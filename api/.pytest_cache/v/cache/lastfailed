@@ -1,0 +1,15 @@
+{
+  "test_app.py::test_apply": true,
+  "test_app.py::test_updateDates": true,
+  "test_app.py::test_getApps": true,
+  "test_app.py::test_getTeamApplications": true,
+  "test_app.py::test_withdrawApplication": true,
+  "test_app.py::test_approveApplication": true,
+  "test_app.py::test_rejectApplication": true,
+  "test_app.py::test_getLogs": true,
+  "test_app.py::test_empty_database": true,
+  "test_app.py::test_invalid_data": true,
+  "test_app.py::test_boundary_values": true,
+  "test_app.py::test_concurrent_requests": true,
+  "test_app.py::test_database_connection_issue": true
+}

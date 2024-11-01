@@ -35,7 +35,7 @@
             },
             methods: {
                 fetchData() {
-                    return fetch('http://localhost:5000/employee')
+                    return fetch('http://localhost:5001/employee')
                         .then(response => response.json())
                         .then(returnedJSON => {
                             this.dataArr = returnedJSON.data;

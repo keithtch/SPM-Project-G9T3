@@ -23,17 +23,113 @@ def get_db_connection():
         database= os.environ.get('RDS_DATABASE')
     )
 
-# When we run the application.py , auto connects to the database and returns the data from the Application table
-@app.route('/application')
-def apply():
+
+@app.route('/employee')
+def get_data():
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM Application")
+            cursor.execute("SELECT * FROM Employee")
             result = cursor.fetchall()
             return {'data': result}
     finally:
         connection.close()
+
+@app.route('/getFirstName', methods=['POST'])
+def get_firstname():
+    data = request.get_json()
+    ids = data.get('ids')
+    idQuery = ', '.join(['%s'] * len(ids))
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM Employee WHERE Staff_ID IN ({idQuery})",ids)
+            result = cursor.fetchall()
+            resultDict = {}
+            for employee in result:
+                resultDict[employee[0]] = employee[1]
+            return {'names':resultDict}
+    finally:
+        connection.close()
+
+@app.route('/findTeam/<int:id>', methods=['POST'])
+def findTeam(id):
+    id = str(id)
+    print(id)
+    queue = []
+    staff = {}
+    dept = {}
+    deptDone = False
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT Role FROM Employee WHERE Staff_ID = %s", (id))
+            role = cursor.fetchone()[0]
+            cursor.execute("SELECT Staff_ID,Staff_FName FROM Employee")
+            nameResult = cursor.fetchall()
+            teamNames = {key:value for key,value in nameResult}
+            print(teamNames)
+            if role == 2:
+                cursor.execute("SELECT * FROM Employee WHERE Reporting_Manager = (SELECT Reporting_Manager FROM Employee WHERE Staff_ID = %s)",(id))
+                staffResult = cursor.fetchall()
+                staff = {teamNames[staffResult[0][7]]: [list(row) for row in staffResult]}
+                print(staff)
+            # elif role == 3:
+            #     cursor.execute("SELECT * FROM Employee WHERE Reporting_Manager = %s", (id))
+            else:
+                if role == 1:
+                    id = 130002
+                cursor.execute("SELECT * FROM Employee")
+                allStaff = cursor.fetchall()
+                allStaff = [list(row) for row in allStaff]
+                queue.append(id)
+                while len(queue)>0:
+                    tempID = int(queue.pop())
+                    for employee in allStaff:
+                        if employee[0] != 130002:
+                            if employee[3] not in dept.keys():
+                                dept[employee[3]] = []
+                            if employee not in dept[employee[3]]:
+                                dept[employee[3]].append(employee)
+
+
+                        if (int(employee[7]) == tempID and (employee not in staff.values()) and (employee[0] != employee[7])):
+                            if teamNames[tempID] not in staff:
+                                staff[teamNames[tempID]] = []
+                            if employee[8] == 1 or employee[8] == 3:
+                                queue.append(employee[0])
+                            staff[teamNames[tempID]].append(employee)
+                print('test!!',staff.values())
+
+            return {'employees':staff, 'dept':dept}
+    finally:
+        connection.close()
+
+@app.route('/findDept', methods=['POST'])
+def findDept():
+    connection = get_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Employee")
+    finally:
+        connection.close()
+
+# When we run the application.py , auto connects to the database and returns the data from the Application table
+@app.route('/application')
+def apply():
+    connection = None
+    try:
+        connection = get_db_connection()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM Application")
+            result = cursor.fetchall()
+            return {'data': result}
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+    finally:
+        if connection:
+            connection.close()
+    
         
 def retrieve_highest_recurring_ID():
     connection = get_db_connection()
@@ -160,6 +256,11 @@ def withdrawApplication():
     time_of_day = data.get('Time_Of_Day')
     reason = data.get('Reason') 
     status= data.get('Status')
+
+    # Input validation
+    if not isinstance(staff_id, int):
+        return jsonify({"status": "error", "message": "Invalid Staff_ID"}), 400
+
     managerid = find_manager(staff_id)
 
     connection = get_db_connection()
@@ -984,7 +1085,12 @@ def getLogs():
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM Staff_Application_Logs")
             result = cursor.fetchall()
-            return {'data': result}
+            if result:
+                return jsonify({"status": "success", "data": result}), 200
+            else:
+                return jsonify({"status": "success", "data": [], "message": "No logs found"}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
     finally:
         connection.close()
    
