@@ -552,10 +552,14 @@ def find_manager(id):
     finally:
         connection.close()
         
-def findid(id,arr):
+def findid(id, arr):
+    try:
+        id = int(id)
+    except ValueError:
+        return -1  # Return -1 or any other value to indicate invalid id
+
     for i in range(len(arr)):
-        # print (id,arr[i][0])
-        if int(id)==int(arr[i][0]):
+        if int(arr[i][0]) == id:
             print(i)
             return i
     return 0

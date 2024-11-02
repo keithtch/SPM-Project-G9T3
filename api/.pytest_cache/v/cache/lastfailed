@@ -11,10 +11,5 @@
   "test_app.py::test_invalid_data": true,
   "test_app.py::test_boundary_values": true,
   "test_app.py::test_concurrent_requests": true,
-  "test_app.py::test_database_connection_issue": true,
-  "test_application.py::test_withdrawApplication": true,
-  "test_application.py::test_rejectApplication": true,
-  "test_application.py::test_invalid_data": true,
-  "test_application.py::test_boundary_values": true,
-  "test_application.py::test_concurrent_requests": true
+  "test_app.py::test_database_connection_issue": true
 }
