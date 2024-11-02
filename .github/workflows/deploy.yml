@@ -75,6 +75,19 @@ jobs:
         run: |
           nohup python -m http.server 8000 &
 
+      - name: Wait for Server to be Ready
+        run: |
+            for i in {1..30}; do
+              if curl -s http://localhost:8000 > /dev/null; then
+                echo "Server is up!"
+                exit 0
+              fi
+              echo "Waiting for server..."
+              sleep 2
+            done
+            echo "Server did not start in time"
+            exit 1  
+
       - name: Run Cypress Tests
         run: npx cypress run
 
