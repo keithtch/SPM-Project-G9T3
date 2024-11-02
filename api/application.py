@@ -304,6 +304,7 @@ def get_recurring_ID(a,b,c):
             retrieval = "Select Recurring_ID from Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s"
             cursor.execute(retrieval,(a,b,c))
             result = cursor.fetchone()
+            print(result)
             print(result[0])
             return result[0]
     finally:
@@ -449,11 +450,28 @@ def rejectApplication():
     date_applied = data.get('Date_Applied')
     time_of_day = data.get('Time_Of_Day')
     rejection_reason = data.get('Rejection_Reason')
-    recurring_id = get_recurring_ID(staff_id,date_applied,time_of_day)
-    
+
+    dayToNum = {'Monday': 0, 'Tuesday': 1, 'Wednesday':2, 'Thursday':3, 'Friday':4, 'Saturday':5, 'Sunday':6}   
+    start = end = day = None #Initialise variables
+    if len(date_applied) > 15:
+        start, end = date_applied.split(' to ')
+        end, day = end.split(' ')
+        day = dayToNum[day[1:-1]]
+        print(start,end,day)
+        date_applied = start
+
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
+            select_query = """
+                SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
+                """
+            print(staff_id,date_applied,time_of_day)
+            cursor.execute(select_query, (staff_id, date_applied, time_of_day))
+            application = cursor.fetchone()
+            if not application:
+                return jsonify({"status": "error", "message": "Application not found"}), 404 #Return error if application not found
+            recurring_id = application[10]
             if recurring_id is not None:
                 query = """
                     UPDATE Application
