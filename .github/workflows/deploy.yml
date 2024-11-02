@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-mock
+          pip install pytest pytest-mock flask
 
       - name: Run Pytest
         run: pytest api/test_application.py
@@ -61,6 +61,9 @@ jobs:
 
       - name: Install Cypress
         run: npm install cypress --save-dev
+
+      - name: Fix Permissions for Cypress
+        run: chmod +x ./node_modules/.bin/cypress
 
       - name: Run Cypress Tests
         run: npx cypress run
