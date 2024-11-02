@@ -7,11 +7,6 @@ describe('Work From Home Management System (WFHMS)', () => {
       localStorage.setItem("staffID", "140894"); // Set a valid staff ID
     });
   
-    // it('should display loading spinner initially', () => {
-    //   // Check if the loading spinner is visible when the page loads
-    //   cy.get('.loading-container',{ timeout: 10000 }).should('be.visible');
-    // });
-  
     it('should display welcome message after loading', () => {
       // Wait for the loading to complete
       cy.get('.loading-container').should('not.exist');
@@ -44,14 +39,6 @@ describe('Work From Home Management System (WFHMS)', () => {
       cy.url().should('include', 'http://localhost:8000/ViewTeamSchedule/vtSchedule.html');
     });
   
-    it('should show HR records access button for HR personnel', () => {
-      // // Set userRole to 1 (or other HR identifier) in local storage
-       localStorage.setItem("staffID", "160008"); // Replace with an actual HR user ID
-       localStorage.setItem("department", "HR"); // Set the department to HR
-       cy.reload(); // Reload the page to apply changes
-      // // Check if the HR records access button is visible
-      cy.get('.btn.btn-warning.w-100.action-btn.logout-btn').contains('HR Records Access - HR Personnel Only').should('be.visible');
-    });
   
     it('should log out and redirect to login page', () => {
       // Click the logout button

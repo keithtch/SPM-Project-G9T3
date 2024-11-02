@@ -26,6 +26,7 @@ describe('HR Records Page', () => {
         // Wait for the table data to load
         cy.intercept('GET', 'https://spm-project-g9-t3.vercel.app/getLogs').as('getRecords');
         cy.wait('@getRecords', {timeout: 10000}).then((interception) => {
+            console.log(interception);
             expect(interception.response.statusCode).to.eq(200);
             expect(interception.response.body.data).to.have.length.greaterThan(0);
         });
