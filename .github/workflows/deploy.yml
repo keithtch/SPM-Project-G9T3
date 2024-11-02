@@ -122,35 +122,18 @@ jobs:
     runs-on: ubuntu-latest
     # needs: [e2e, pytest, test]  # Only run if all test jobs succeeded
     steps:
-      - name: Checkout Code
+      - name: Checkout Collaborated Repo
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 
+          repository: rykn1/SPM-Project-G9T3
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use a PAT for authentication
 
-      - name: Debugging Info
+      - name: Sync Changes to Fork
         run: |
-            git remote -v
-            git status
-            git log -n 5
-            git diff
-        
-
-      - name: Sync Changes
-        if: success()
-        run: |
-          # Configure Git
-          git config --global user.name "keithtch"
-          git config --global user.email "keith.tch9@gmail.com"
-          
-          # Add a remote for your fork
-          git remote add fork https://github.com/keithtch/SPM-Project.git || \
-          git remote set-url fork https://github.com/keithtch/SPM-Project.git
-
-          # Check for changes
+          git remote add fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git || \
+          git remote set-url fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git
           git add .
           git commit -m "Syncing changes after successful tests" || echo "No changes to commit"
-          
-          # Push changes to your fork
-          git push fork main
+          git push fork main  # Push to your forked repo
         env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # This token is used for authentication
+          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use PAT here for the forked repo
