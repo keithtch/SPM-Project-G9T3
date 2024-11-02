@@ -59,15 +59,14 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Install Cypress
-        run: npm install cypress
-
       - name: Fix Permissions for Cypress Binary
         run: chmod +x ./node_modules/cypress/bin/cypress
 
+      - name: Install Cypress
+        run: npm install cypress --save-dev
+
       - name: Install Cypress Binary
         run: npx cypress install
-
 
       - name: Run Cypress Tests
         run: npx cypress run
