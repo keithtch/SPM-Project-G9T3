@@ -63,13 +63,16 @@ def findTeam(id):
     connection = get_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT Role FROM Employee WHERE Staff_ID = %s", (id))
-            role = cursor.fetchone()[0]
+            cursor.execute("SELECT Role, Dept FROM Employee WHERE Staff_ID = %s", (id))
+            result = cursor.fetchall()
+            role,deptName = result[0]
+            print(role)
+
             cursor.execute("SELECT Staff_ID,Staff_FName FROM Employee")
             nameResult = cursor.fetchall()
             teamNames = {key:value for key,value in nameResult}
             print(teamNames)
-            if role == 2:
+            if role == 2 and deptName != 'HR':
                 cursor.execute("SELECT * FROM Employee WHERE Reporting_Manager = (SELECT Reporting_Manager FROM Employee WHERE Staff_ID = %s)",(id))
                 staffResult = cursor.fetchall()
                 staff = {teamNames[staffResult[0][7]]: [list(row) for row in staffResult]}
@@ -77,7 +80,7 @@ def findTeam(id):
             # elif role == 3:
             #     cursor.execute("SELECT * FROM Employee WHERE Reporting_Manager = %s", (id))
             else:
-                if role == 1:
+                if role == 1 or deptName == 'HR':
                     id = 130002
                 cursor.execute("SELECT * FROM Employee")
                 allStaff = cursor.fetchall()
@@ -86,21 +89,22 @@ def findTeam(id):
                 while len(queue)>0:
                     tempID = int(queue.pop())
                     for employee in allStaff:
-                        if employee[0] != 130002:
-                            if employee[3] not in dept.keys():
-                                dept[employee[3]] = []
-                            if employee not in dept[employee[3]]:
-                                dept[employee[3]].append(employee)
+                        
 
 
                         if (int(employee[7]) == tempID and (employee not in staff.values()) and (employee[0] != employee[7])):
+
+                            if employee[0] != 130002:
+                                if employee[3] not in dept.keys():
+                                    dept[employee[3]] = []
+                                if employee not in dept[employee[3]]:
+                                    dept[employee[3]].append(employee)
                             if teamNames[tempID] not in staff:
                                 staff[teamNames[tempID]] = []
                             if employee[8] == 1 or employee[8] == 3:
                                 queue.append(employee[0])
                             staff[teamNames[tempID]].append(employee)
-                print('test!!',staff.values())
-
+                print('\n\ntest!!',staff.values())
             return {'employees':staff, 'dept':dept}
     finally:
         connection.close()
@@ -256,14 +260,14 @@ def withdrawApplication():
     time_of_day = data.get('Time_Of_Day')
     reason = data.get('Reason') 
     status= data.get('Status')
-
     # Input validation
-    if not isinstance(staff_id, int):
+    if not isinstance(staff_id, str):
         return jsonify({"status": "error", "message": "Invalid Staff_ID"}), 400
 
     managerid = find_manager(staff_id)
 
     connection = get_db_connection()
+
     try:
         with connection.cursor() as cursor:
             # Step 1: Delete the pending application from the Application table
