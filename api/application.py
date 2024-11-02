@@ -175,13 +175,15 @@ def updateDates():
                     print('application success logged')
                 else:
                     if entry[2] == 'AM' or entry[2] == 'PM':
-                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = 'Full Day'"""
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND Time_Of_Day = 'Full Day'"""
                     else:
-                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = 'AM' OR Time_Of_Day = 'PM'"""
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND (Time_Of_Day = 'AM' OR Time_Of_Day = 'PM')"""
 
 
                     cursor.execute(check_query,(entry[0],entry[1]))
                     result = cursor.fetchall()
+                    print('tihs',result, 'END')
+                    
                     if result:
                         return jsonify({"status": "error", "message": "Application already exists"}), 400
                     application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date, Recurring_Day)
@@ -199,7 +201,7 @@ def updateDates():
 
              
             if dates:
-                print(dates)
+                # print(dates)
                 return jsonify({"status": "success", "received_dates": dates}), 200
             else:
                 return jsonify({"status": "error", "message": "No dates received"}), 400
