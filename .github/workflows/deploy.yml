@@ -71,6 +71,10 @@ jobs:
             exit 1
           fi
 
+      - name: Start Server
+        run: |
+          nohup python -m http.server 8000 &
+
       - name: Run Cypress Tests
         run: npx cypress run
 
