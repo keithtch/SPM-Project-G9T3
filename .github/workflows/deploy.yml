@@ -135,27 +135,7 @@ jobs:
       #     git push upstream main
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Use PAT here for the upstream repo
-
-      - name: Check GITHUB_TOKEN
-        run: |
-           if [ -z "$GITHUB_TOKEN" ]; then
-            echo "GITHUB_TOKEN is not set or is empty."
-            exit 1
-           else
-              echo "GITHUB_TOKEN is set."
-           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This will check if the GitHub Actions default token is populated
-
-      - name: Configure Remote and Check Access
-        run: |
-            git remote add fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git
-            git ls-remote fork
-        env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        if: always() 
         
-
       - name: Push Changes to Fork
         # if: success()
         run: |
