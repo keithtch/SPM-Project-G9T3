@@ -35,7 +35,6 @@ describe('HR Records Page', () => {
 
     it('should fetch and display HR records data', () => {
         // Wait for the table data to load
-        cy.intercept('GET', 'http://localhost:5001/getLogs').as('getRecords');
         cy.wait('@getRecords', {timeout: 10000}).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
             expect(interception.response.body.data).to.have.length.greaterThan(0);

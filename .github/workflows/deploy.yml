@@ -112,6 +112,12 @@ jobs:
 
       - name: Run Cypress Tests
         run: npx cypress run
+      
+      - name: Upload Cypress Screenshots
+        uses: actions/upload-artifact@v3
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/**  # Path to the screenshots
 
   deploy:
     runs-on: ubuntu-latest
