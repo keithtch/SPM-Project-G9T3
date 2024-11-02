@@ -2,7 +2,15 @@ describe('HR Records Page', () => {
 
     beforeEach(() => {
 
-        cy.intercept('GET', 'http://localhost:5001/getLogs').as('getRecords');
+        cy.intercept('GET', 'http://localhost:5001/getLogs', {
+            statusCode: 200,
+            body: {
+                data: [
+                    [1, '12345', '2023-01-01', 'Morning', '67890', 'Approved', 'Reason 1', 'Manager Reason 1', 'Staff Withdraw Reason 1'],
+                    [2, '12346', '2023-01-02', 'Afternoon', '67891', 'Rejected', 'Reason 2', 'Manager Reason 2', '']
+                ]
+            }
+        }).as('getRecords');
 
         // Visit the HR Records page
         cy.visit('http://localhost:8000/HRRecords/hrrecords.html');  // Replace with your actual URL or path
