@@ -18,16 +18,16 @@ describe('View Team Schedule Page', () => {
   
     it('should toggle between daily and weekly view buttons', () => {
       cy.get('.btn-group button').contains('Weekly View').click();
-      cy.get('.card-title').contains('Weekly Team Information').should('be.visible');
+      cy.get('.card-title',{timeout: 10000}).contains('Weekly Team Information').should('be.visible');
       cy.get('.btn-group button').contains('Daily View').click();
-      cy.get('.card-title').contains('Team Information').should('be.visible');
+      cy.get('.card-title',{timeout: 10000}).contains('Team Information').should('be.visible');
     });
 
     it('should toggle between daily and weekly view buttons and verify correct display', () => {
         cy.get('.btn-group button').contains('Weekly View').click();
-        cy.get('.card-title').contains('Weekly Team Information').should('be.visible');
+        cy.get('.card-title',{timeout: 10000}).contains('Weekly Team Information').should('be.visible');
         cy.get('.btn-group button').contains('Daily View').click();
-        cy.get('.card-title').contains('Team Information').should('be.visible');
+        cy.get('.card-title',{timeout: 10000}).contains('Team Information').should('be.visible');
     });
   
   });

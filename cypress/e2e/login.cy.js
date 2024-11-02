@@ -20,13 +20,13 @@ describe('All-In-One WFHMS Login Page', () => {
             body: {
                 data: [['12345', '', '', '', '', '', '', 'Manager Name']], // Mock data with expected structure
             },
-        });
+        }).as('getEmployee');
 
         cy.get('.input-box input[type="text"]').type('12345');
         cy.get('.btn').click();
 
-        cy.wait(500); // wait for loading screen to disappear if necessary
-        cy.url().should('include', '/Home/home.html');
+        cy.wait('@getEmployee'); // wait for loading screen to disappear if necessary
+        cy.url({timeout: 10000}).should('include', '/Home/home.html');
         cy.window().then((win) => {
             expect(win.localStorage.getItem('staffID')).to.eq('12345');
             expect(win.localStorage.getItem('Reporting_Manager')).to.eq('Manager Name');

@@ -25,13 +25,13 @@ describe('HR Records Page', () => {
     it('should fetch and display HR records data', () => {
         // Wait for the table data to load
         cy.intercept('GET', 'https://spm-project-g9-t3.vercel.app/getLogs').as('getRecords');
-        cy.wait('@getRecords').then((interception) => {
+        cy.wait('@getRecords', {timeout: 10000}).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
             expect(interception.response.body.data).to.have.length.greaterThan(0);
         });
 
         // Verify table rows are rendered based on API response
-        cy.get('table tbody tr').should('have.length.greaterThan', 0);
+        cy.get('table tbody tr', {timeout: 10000}).should('have.length.greaterThan', 0);
     });
 
     it('should display correct headers in the table', () => {
