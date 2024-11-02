@@ -260,14 +260,14 @@ def withdrawApplication():
     time_of_day = data.get('Time_Of_Day')
     reason = data.get('Reason') 
     status= data.get('Status')
-
     # Input validation
-    if not isinstance(staff_id, int):
+    if not isinstance(staff_id, str):
         return jsonify({"status": "error", "message": "Invalid Staff_ID"}), 400
 
     managerid = find_manager(staff_id)
 
     connection = get_db_connection()
+
     try:
         with connection.cursor() as cursor:
             # Step 1: Delete the pending application from the Application table
