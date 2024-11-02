@@ -60,13 +60,16 @@ jobs:
         run: npm install
 
       - name: Fix Permissions for Cypress Binary
-        run: chmod +x ./node_modules/cypress/bin/cypress
+        run: chmod +x ./node_modules/.bin/cypress
 
       - name: Install Cypress
-        run: npm install cypress --save-dev
-
-      - name: Install Cypress Binary
-        run: npx cypress install
+        run: |
+          if [ -x ./node_modules/.bin/cypress ]; then
+            npx cypress install
+          else
+            echo "Cypress binary not found or not executable"
+            exit 1
+          fi
 
       - name: Run Cypress Tests
         run: npx cypress run
