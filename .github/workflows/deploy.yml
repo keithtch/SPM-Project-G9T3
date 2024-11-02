@@ -72,7 +72,6 @@ jobs:
           fi
 
       - name: Start Server
-        working-directory: ./SPM-Project-G9T3
         run: |
           nohup python -m http.server 8000 &
 
