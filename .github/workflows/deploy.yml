@@ -131,12 +131,12 @@ jobs:
         if: success()
         run: |
           # Configure Git
-          git config --global user.name "Your Name"
-          git config --global user.email "your_email@example.com"
+          git config --global user.name "keithtch"
+          git config --global user.email "keith.tch9@gmail.com"
           
           # Add a remote for your fork
-          git remote add fork https://github.com/your_username/forked-repo.git || \
-          git remote set-url fork https://github.com/your_username/forked-repo.git
+          git remote add fork https://github.com/keithtch/SPM-Project.git || \
+          git remote set-url fork https://github.com/keithtch/SPM-Project.git
 
           # Check for changes
           git add .
