@@ -117,7 +117,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: cypress-screenshots
-          path: cypress/screenshots/**  # Path to the screenshots
+          path: cypress/screenshots/**  
+        if: failure()
 
   deploy:
     runs-on: ubuntu-latest
