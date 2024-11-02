@@ -141,8 +141,9 @@ jobs:
         run: |
           git config --global user.name "keithtch"
           git config --global user.email "keith.tch9@gmail.com"
-          git remote add fork https://github.com/keithtch/SPM-Project.git
-          git fetch fork
+          git remote set-url fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git
+          git add .
+          git commit -m "Syncing changes after successful tests"
           git push fork main
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }} # Use PAT here for the fork as well
