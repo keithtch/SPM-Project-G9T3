@@ -130,6 +130,8 @@ jobs:
 
       - name: Sync Changes to Fork
         run: |
+          git config --global user.email "keith.tch9@gmail.com"
+          git config --global user.name "keithtch"
           git remote add fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git || \
           git remote set-url fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git
           git add .
