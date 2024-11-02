@@ -145,4 +145,4 @@ jobs:
           # Push changes to your fork
           git push fork main
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This token is used for authentication
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # This token is used for authentication
