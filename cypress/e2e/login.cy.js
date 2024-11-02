@@ -1,6 +1,6 @@
 describe('All-In-One WFHMS Login Page', () => {
     beforeEach(() => {
-        cy.visit('http://localhost/SPM-Project-G9T3/Login&Authentication/login.html'); // Adjust the URL 
+        cy.visit('http://localhost:8000/Login&Authentication/login.html'); // Adjust the URL 
     });
 
     it('Displays initial elements correctly', () => {

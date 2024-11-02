@@ -2,7 +2,7 @@ describe('HR Records Page', () => {
 
     beforeEach(() => {
         // Visit the HR Records page
-        cy.visit('http://localhost/SPM-Project-G9T3/HRRecords/hrrecords.html');  // Replace with your actual URL or path
+        cy.visit('http://localhost:8000/HRRecords/hrrecords.html');  // Replace with your actual URL or path
         localStorage.setItem("staffID", "160008"); // Set a valid staff ID
     });
 
@@ -19,7 +19,7 @@ describe('HR Records Page', () => {
     it('should navigate to the home page when Go Back button is clicked', () => {
         // Click the "Go Back to Home Page" button and confirm redirection
         cy.get('button').contains('Go Back to Home Page').click();
-        cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Home/home.html');
+        cy.url().should('include', 'http://localhost:8000/Home/home.html');
     });
 
     it('should fetch and display HR records data', () => {

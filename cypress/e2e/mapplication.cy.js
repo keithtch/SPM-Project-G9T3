@@ -1,6 +1,6 @@
 describe('Manage My WFH Applications Page', () => {
     beforeEach(() => {
-      cy.visit('http://localhost/SPM-Project-G9T3/ManageApplication/mapplication.html');
+      cy.visit('http://localhost:8000/ManageApplication/mapplication.html');
       localStorage.setItem("staffID", "140894"); 
       localStorage.setItem("Reporting_Manager", "140001"); 
     });
@@ -35,7 +35,7 @@ describe('Manage My WFH Applications Page', () => {
       cy.contains('Go Back to Home Page').click()
       
       // Verify navigation
-      cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Home/home.html')
+      cy.url().should('include', 'http://localhost:8000/Home/home.html')
     });
 
     it('should have all navigation tabs', () => {

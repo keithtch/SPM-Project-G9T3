@@ -1,7 +1,7 @@
 describe('View Team Schedule Page', () => {
     beforeEach(() => {
       // Visit the page before each test
-      cy.visit('http://localhost/SPM-Project-G9T3/ViewTeamSchedule/vtSchedule.html');
+      cy.visit('http://localhost:8000/ViewTeamSchedule/vtSchedule.html');
       localStorage.setItem("staffID", "140894");
     });
   

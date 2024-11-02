@@ -1,6 +1,6 @@
 describe('WFH Schedule Page Tests', () => {
     beforeEach(() => {
-      cy.visit('http://localhost/SPM-Project-G9T3/ViewOwnSchedule/voSchedule.html'); 
+      cy.visit('http://localhost:8000/ViewOwnSchedule/voSchedule.html'); 
       cy.wait(1000); 
       localStorage.setItem("staffID", "140894"); 
     });
@@ -11,7 +11,7 @@ describe('WFH Schedule Page Tests', () => {
         .click();
   
       // Check if the page redirected correctly
-      cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Application/application.html');
+      cy.url().should('include', 'http://localhost:8000/Application/application.html');
     });
   
     it('Returns to the home page', () => {
@@ -20,7 +20,7 @@ describe('WFH Schedule Page Tests', () => {
         .click();
   
       // Verify redirection to the home page
-      cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Home/home.html');
+      cy.url().should('include', 'http://localhost:8000/Home/home.html');
     });
 
     it('Checks that the page title is correct', () => {
@@ -43,18 +43,18 @@ describe('WFH Schedule Page Tests', () => {
           .click();
     
         // Check if redirected correctly
-        cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Application/application.html');
+        cy.url().should('include', 'http://localhost:8000/Application/application.html');
       });
     
       it('Ensures Go Back to Home Page button is present and clickable', () => {
-        cy.visit('http://localhost/SPM-Project-G9T3/ViewOwnSchedule/voSchedule.html');
+        cy.visit('http://localhost:8000/ViewOwnSchedule/voSchedule.html');
         cy.get('.button b-button')
           .contains('Go Back to Home Page')
           .should('be.visible')
           .click();
     
         // Verify redirection to the home page
-        cy.url().should('include', 'http://localhost/SPM-Project-G9T3/Home/home.html');
+        cy.url().should('include', 'http://localhost:8000/Home/home.html');
       });
     
       it('Ensures fetching and storing of staffID in localStorage', () => {
