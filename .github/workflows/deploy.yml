@@ -40,7 +40,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-mock flask flask_cors
+          pip install pytest pytest-mock flask flask_cors python-dotenv
 
       - name: Run Pytest
         run: pytest api/test_application.py
@@ -62,11 +62,8 @@ jobs:
       - name: Install Cypress
         run: npm install cypress
 
-      - name: Install Cypress Binary
-        run: npx cypress install
-
-      - name: Fix Permissions for Cypress
-        run: chmod +x ./node_modules/.bin/cypress
+      - name: Fix Permissions for Cypress Binary
+        run: chmod +x $(npm bin)/cypress
 
       - name: Run Cypress Tests
         run: npx cypress run
