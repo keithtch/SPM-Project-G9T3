@@ -16,7 +16,9 @@ CORS(app)
 load_dotenv('../.env')
 
 def dummy_function():
+    pass
     return "Hello World"
+
 
 # Getting the database connection
 def get_db_connection():

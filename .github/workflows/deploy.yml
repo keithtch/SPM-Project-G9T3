@@ -125,19 +125,6 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Push Changes to Collaborated Repo
-        if: success()
-        run: |
-          git config --global user.name "${{ github.actor }}"  # Use the GitHub actor's username
-          git config --global user.email "${{ github.event.pusher.email }}"  # Use the pusher's email
-          git remote add upstream https://github.com/rykn1/SPM-Project-G9T3.git
-          git fetch upstream
-          git add .
-          git commit -m "Syncing changes after successful tests"
-          git push upstream main
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # Use your PAT here for the upstream repo
-
       - name: Push Changes to Fork
         if: success()
         run: |
