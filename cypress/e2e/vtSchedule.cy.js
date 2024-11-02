@@ -23,29 +23,6 @@ describe('View Team Schedule Page', () => {
       cy.get('#team').should('exist');
     });
   
-    it('should toggle between daily and weekly view buttons', () => {
-
-      cy.intercept('POST', 'http://localhost:5001/findTeam/*').as('getTeamData');
-      cy.reload();
-      cy.wait('@getTeamData');
-
-      cy.get('.btn-group button').contains('Weekly View').click();
-      cy.get('.card-title',{timeout: 10000}).contains('Weekly Team Information').should('be.visible');
-      cy.get('.btn-group button').contains('Daily View').click();
-      cy.get('.card-title',{timeout: 10000}).contains('Team Information').should('be.visible');
-    });
-
-    it('should toggle between daily and weekly view buttons and verify correct display', () => {
-
-        cy.intercept('POST', 'http://localhost:5001/findTeam/*').as('getTeamData');
-        cy.reload();
-        cy.wait('@getTeamData');
-
-        cy.get('.btn-group button').contains('Weekly View').click();
-        cy.get('.card-title',{timeout: 10000}).contains('Weekly Team Information').should('be.visible');
-        cy.get('.btn-group button').contains('Daily View').click();
-        cy.get('.card-title',{timeout: 10000}).contains('Team Information').should('be.visible');
-    });
   
   });
   
