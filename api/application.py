@@ -174,6 +174,16 @@ def updateDates():
                     connection.commit()
                     print('application success logged')
                 else:
+                    if entry[2] == 'AM' or entry[2] == 'PM':
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = 'Full Day'"""
+                    else:
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = 'AM' OR Time_Of_Day = 'PM'"""
+
+
+                    cursor.execute(check_query,(entry[0],entry[1]))
+                    result = cursor.fetchall()
+                    if result:
+                        return jsonify({"status": "error", "message": "Application already exists"}), 400
                     application_query= """INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date, Recurring_Day)
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                     cursor.execute(application_query,(entry[0],entry[1],entry[2],entry[3],entry[4],entry[5],entry[1],entry[1],entry[9]))
