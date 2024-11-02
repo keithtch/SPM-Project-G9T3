@@ -22,7 +22,30 @@ def get_db_connection():
         password=os.environ.get('RDS_PASSWORD'),
         database= os.environ.get('RDS_DATABASE')
     )
+def send_email(subject,body,email):
+    try:
+        # Set up the email sender credentials
+        email_sender = os.environ.get('EMAIL_SENDER')
+        email_password = os.environ.get('EMAIL_PASSWORD')
 
+        # Create a multipart message
+        msg = MIMEMultipart()
+        msg['From'] = email_sender
+        msg['To'] = email
+        msg['Subject'] = subject
+
+        # Attach the email body to the message
+        msg.attach(MIMEText(body, 'plain'))
+
+        # Set up the secure SSL context and SMTP server
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
+            server.login(email_sender, email_password)
+            server.sendmail(email_sender, email, msg.as_string())
+
+        print(f"Email sent to {email}")
+    except Exception as e:
+        print(f"Error sending email: {e}")
 
 @app.route('/employee')
 def get_data():
@@ -419,29 +442,8 @@ def approveApplication():
             """
             # Send the email
             if email:
-                try:
-                    # Set up the email sender credentials
-                    email_sender = os.environ.get('EMAIL_SENDER')
-                    email_password = os.environ.get('EMAIL_PASSWORD')
-
-                    # Create a multipart message
-                    msg = MIMEMultipart()
-                    msg['From'] = email_sender
-                    msg['To'] = email
-                    msg['Subject'] = subject
-
-                    # Attach the email body to the message
-                    msg.attach(MIMEText(body, 'plain'))
-
-                    # Set up the secure SSL context and SMTP server
-                    context = ssl.create_default_context()
-                    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                        server.login(email_sender, email_password)
-                        server.sendmail(email_sender, email, msg.as_string())
-
-                    print(f"Email sent to {email}")
-                except Exception as e:
-                    print(f"Error sending email: {e}")
+                send_email(subject,body,email)
+                
             else:
                 print("Employee email not found; cannot send email.")            
             
@@ -522,29 +524,8 @@ def rejectApplication():
             """
             # Send the email
             if email:
-                try:
-                    # Set up the email sender credentials
-                    email_sender = os.environ.get('EMAIL_SENDER')
-                    email_password = os.environ.get('EMAIL_PASSWORD')
+                send_email(subject,body,email)
 
-                    # Create a multipart message
-                    msg = MIMEMultipart()
-                    msg['From'] = email_sender
-                    msg['To'] = email
-                    msg['Subject'] = subject
-
-                    # Attach the email body to the message
-                    msg.attach(MIMEText(body, 'plain'))
-
-                    # Set up the secure SSL context and SMTP server
-                    context = ssl.create_default_context()
-                    with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                        server.login(email_sender, email_password)
-                        server.sendmail(email_sender, email, msg.as_string())
-
-                    print(f"Email sent to {email}")
-                except Exception as e:
-                    print(f"Error sending email: {e}")
             else:
                 print("Employee email not found; cannot send email.")   
             
@@ -655,29 +636,7 @@ def pendingwithdrawApprovedApplication():
 
                 # Send the email to the manager
                 if manager_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = manager_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, manager_email, msg.as_string())
-
-                        print(f"Email sent to manager at {manager_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
+                    send_email(subject,body,manager_email)
                 else:
                     print("Manager email not found; cannot send email.")
 
@@ -764,29 +723,7 @@ def RejectedPendingWithdrawApprovedApplication():
 
                 # Send the email to the manager
                 if staff_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = staff_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, staff_email, msg.as_string())
-
-                        print(f"Email sent to manager at {staff_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
+                    send_email(subject,body,staff_email)
                 else:
                     print("Manager email not found; cannot send email.")
 
@@ -870,29 +807,7 @@ def ApprovePendingWithdrawApprovedApplication():
 
                 # Send the email to the manager
                 if staff_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = staff_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, staff_email, msg.as_string())
-
-                        print(f"Email sent to manager at {staff_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
+                    send_email(subject,body,staff_email)
                 else:
                     print("Manager email not found; cannot send email.")
 
@@ -978,29 +893,7 @@ def withdrawApprovedApplication():
 
                 # Send the email to the manager
                 if manager_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = manager_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, manager_email, msg.as_string())
-
-                        print(f"Email sent to manager at {manager_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
+                    send_email(subject,body,manager_email)
                 else:
                     print("Manager email not found; cannot send email.")
 
@@ -1085,29 +978,7 @@ def changeApplication():
 
                 # Send the email to the manager
                 if staff_email:
-                    try:
-                        # Set up the email sender credentials
-                        email_sender = os.environ.get('EMAIL_SENDER')
-                        email_password = os.environ.get('EMAIL_PASSWORD')
-
-                        # Create a multipart message
-                        msg = MIMEMultipart()
-                        msg['From'] = email_sender
-                        msg['To'] = staff_email
-                        msg['Subject'] = subject
-
-                        # Attach the email body to the message
-                        msg.attach(MIMEText(body, 'plain'))
-
-                        # Set up the secure SSL context and SMTP server
-                        context = ssl.create_default_context()
-                        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as server:
-                            server.login(email_sender, email_password)
-                            server.sendmail(email_sender, staff_email, msg.as_string())
-
-                        print(f"Email sent to manager at {staff_email}")
-                    except Exception as e:
-                        print(f"Error sending email to manager: {e}")
+                    send_email(subject,body,staff_email)
                 else:
                     print("Manager email not found; cannot send email.")
 
