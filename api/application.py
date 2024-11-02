@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 CORS(app)
 
+#Simulating code changes for Github Actions
+
 load_dotenv('../.env')
 
 # Getting the database connection
