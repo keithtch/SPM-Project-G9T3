@@ -124,16 +124,25 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 
 
-      - name: Push Changes to Fork
+      - name: Sync Changes
         if: success()
         run: |
-          git config --global user.name "keithtch" 
-          git config --global user.email "keith.tch9@gmail.com"
-          git remote add fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git || \
-          git remote set-url fork https://keithtch:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/keithtch/SPM-Project.git
+          # Configure Git
+          git config --global user.name "Your Name"
+          git config --global user.email "your_email@example.com"
+          
+          # Add a remote for your fork
+          git remote add fork https://github.com/your_username/forked-repo.git || \
+          git remote set-url fork https://github.com/your_username/forked-repo.git
+
+          # Check for changes
           git add .
-          git commit -m "Syncing changes after successful tests"
+          git commit -m "Syncing changes after successful tests" || echo "No changes to commit"
+          
+          # Push changes to your fork
           git push fork main
         env:
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # This token is used for authentication
