@@ -71,7 +71,7 @@
                 hrRecords: []
             },
             mounted(){
-                fetch('https://spm-project-g9-t3.vercel.app/getLogs')
+                fetch('http://localhost:5001/getLogs')
                     .then(response => response.json()) 
                     .then((returnedJSON) => {
                         //console.log(returnedJSON);

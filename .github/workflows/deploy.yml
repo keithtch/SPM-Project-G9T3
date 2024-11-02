@@ -71,11 +71,28 @@ jobs:
             exit 1
           fi
 
-      - name: Start Server
+      - name: Start Backend Server
+        run: |
+            nohup python api/application.py &
+
+      - name: Start Frontend Server
         run: |
           nohup python -m http.server 8000 &
 
-      - name: Wait for Server to be Ready
+      - name: Wait for Backend Server to be Ready
+        run: |
+            for i in {1..30}; do
+              if curl -s http://localhost:5001 > /dev/null; then
+                echo "Backend server is up!"
+                exit 0
+              fi
+              echo "Waiting for backend server..."
+              sleep 2
+            done
+            echo "Backend server did not start in time"
+            exit 1    
+
+      - name: Wait for Frontend Server to be Ready
         run: |
             for i in {1..30}; do
               if curl -s http://localhost:8000 > /dev/null; then
