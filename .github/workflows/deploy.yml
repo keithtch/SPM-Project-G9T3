@@ -72,8 +72,8 @@ jobs:
           fi
 
       - name: Start Server
+        working-directory: ./SPM-Project-G9T3
         run: |
-          cd $(dirname $(find . -name SPM-Project-G9T3 -type d))
           nohup python -m http.server 8000 &
 
       - name: Wait for Server to be Ready
