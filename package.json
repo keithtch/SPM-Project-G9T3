@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "jest",
-    "build": "mkdir -p dist &&  mkdir -p dist/Application && cp -r Application/* dist/Application && mkdir -p dist/ViewTeamSchedule && cp -r ViewTeamSchedule/* dist/ViewTeamSchedule && mkdir -p dist/ManageApplication && cp -r ManageApplication/* dist/ManageApplication && mkdir -p dist/Images && cp -r Images/* dist/Images && mkdir -p dist/ViewOwnSchedule && cp -r ViewOwnSchedule/* dist/ViewOwnSchedule && mkdir -p dist/Home && cp -r Home/* dist/Home && mkdir -p dist/HRRecords && cp -r HRRecords/* dist/HRRecords && cp login.css dist && cp login.html dist"
+    "build": "mkdir -p dist &&  mkdir -p dist/Application && cp -r Application/* dist/Application && mkdir -p dist/ViewTeamSchedule && cp -r ViewTeamSchedule/* dist/ViewTeamSchedule && mkdir -p dist/ManageApplication && cp -r ManageApplication/* dist/ManageApplication && mkdir -p dist/Images && cp -r Images/* dist/Images && mkdir -p dist/ViewOwnSchedule && cp -r ViewOwnSchedule/* dist/ViewOwnSchedule && mkdir -p dist/Home && cp -r Home/* dist/Home && mkdir -p dist/HRRecords && cp -r HRRecords/* dist/HRRecords && mkdir -p dist/Utilities && cp -r Utilities/* dist/Utilities && cp login.css dist && cp login.html dist"
   },
   "keywords": [],
   "author": "",
