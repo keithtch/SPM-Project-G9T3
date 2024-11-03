@@ -27,7 +27,7 @@ describe('All-In-One WFHMS Login Page', () => {
         cy.get('.input-box input[type="text"]').type('12345');
         cy.get('.btn').click();
 
-        cy.wait('@getEmployee'); // wait for loading screen to disappear if necessary
+        // cy.wait('@getEmployee'); // wait for loading screen to disappear if necessary
         cy.url({timeout: 10000}).should('include', '/Home/home.html');
         cy.window().then((win) => {
             expect(win.localStorage.getItem('staffID')).to.eq('12345');

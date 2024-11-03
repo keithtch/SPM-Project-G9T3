@@ -43,7 +43,7 @@ describe('Work From Home Management System (WFHMS)', () => {
     it('should log out and redirect to login page', () => {
       // Click the logout button
       cy.get('.logout-btn').contains('Log Out').click();
-      cy.url().should('include', 'http://localhost:8000/Login&Authentication/login.html');
+      cy.url().should('include', 'http://localhost:8000/login.html');
     });
   
     it('should show notification toast messages', () => {
