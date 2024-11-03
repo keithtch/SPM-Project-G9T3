@@ -35,7 +35,7 @@
             },
             methods: {
                 fetchData() {
-                    return fetch('http://localhost:5001/employee')
+                    return fetch('https://spm-project-g9-t3-aql6.vercel.app/employee')
                         .then(response => response.json())
                         .then(returnedJSON => {
                             this.dataArr = returnedJSON.data;
@@ -56,7 +56,7 @@
                     this.fetchData().then(() => {
                         if (this.checkId(this.staffID)) {
                             localStorage.setItem('staffID', this.staffID);
-                            window.location.href = '../Home/home.html'; 
+                            window.location.href = './Home/home.html'; 
                         } else {
                             this.isLoading = false; 
                             alert('Invalid StaffID. Please try again.');
