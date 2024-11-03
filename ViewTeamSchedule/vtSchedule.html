@@ -428,7 +428,7 @@
                   }
                 }
 
-                const apps = await axios.post("http://localhost:5001/getApps", {
+                const apps = await axios.post("https://spm-project-g9-t3-aql6.vercel.app/getApps", {
                   ids: idArr,
                   date: formattedDate,
                   status: "Approved",
@@ -525,7 +525,7 @@
                 }
                 // console.log(idArr)
                 // console.log(this.schedule)
-                const apps = await axios.post("http://localhost:5001/getApps", {
+                const apps = await axios.post("https://spm-project-g9-t3-aql6.vercel.app/getApps", {
                   ids: idArr,
                   date: this.selectedDate,
                   status: "Approved",
@@ -620,7 +620,7 @@
           this.updateInfo();
 
           const team = await axios.post(
-            "http://localhost:5001/findTeam/" + this.staffID
+            "https://spm-project-g9-t3-aql6.vercel.app/findTeam/" + this.staffID
           );
           var teamResult = team.data.employees;
           console.log(teamResult);

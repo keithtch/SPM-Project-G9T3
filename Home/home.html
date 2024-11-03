@@ -115,7 +115,7 @@
           setInterval(this.updateTime, 1000);
 
           this.staffID = localStorage.getItem("staffID");
-          fetch("http://localhost:5001/employee")
+          fetch("https://spm-project-g9-t3-aql6.vercel.app/employee")
             .then((response) => response.json())
             .then((returnedJSON) => {
               console.log(returnedJSON);

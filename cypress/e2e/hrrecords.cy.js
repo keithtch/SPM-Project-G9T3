@@ -2,7 +2,7 @@ describe('HR Records Page', () => {
 
     beforeEach(() => {
 
-        cy.intercept('GET', 'http://localhost:5001/getLogs', {
+        cy.intercept('GET', 'https://spm-project-g9-t3-aql6.vercel.app/getLogs', {
             statusCode: 200,
             body: {
                 data: [

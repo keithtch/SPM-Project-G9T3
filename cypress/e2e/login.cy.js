@@ -1,6 +1,6 @@
 describe('All-In-One WFHMS Login Page', () => {
     beforeEach(() => {
-        cy.intercept('GET', 'http://localhost:5001/employee', {
+        cy.intercept('GET', 'https://spm-project-g9-t3-aql6.vercel.app/employee', {
             body: {
                 data: [['12345', '', '', '', '', '', '', 'Manager Name']], // Mock data with expected structure
             },
@@ -36,7 +36,7 @@ describe('All-In-One WFHMS Login Page', () => {
     });
 
     it('Displays error message on invalid StaffID', () => {
-        cy.intercept('GET', 'http://localhost:5001/employee', {
+        cy.intercept('GET', 'https://spm-project-g9-t3-aql6.vercel.app/employee', {
             body: {
                 data: [['67890', '', '', '', '', '', '', 'Manager Name']], 
             },

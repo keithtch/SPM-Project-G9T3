@@ -384,7 +384,7 @@
 
         async getrole() {
           try {
-            const response = await fetch("http://localhost:5001/employee");
+            const response = await fetch("https://spm-project-g9-t3-aql6.vercel.app/employee");
             const returnedJSON = await response.json();
             console.log(returnedJSON);
 
@@ -403,7 +403,7 @@
 
 
         async getteam() {
-          const team = await axios.post('http://localhost:5001/findTeam/' + this.staffID)
+          const team = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/findTeam/' + this.staffID)
           var teamResult = team.data.employees
           this.teamData = teamResult
           console.log(this.teamData)
@@ -418,7 +418,7 @@
         },
         async getTeamApplications() {
           try {
-            var response = await axios.post('http://localhost:5001/getTeamApplications', {
+            var response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/getTeamApplications', {
               staffID: this.staffID  // send staffID in the request body as JSON
             });
 
@@ -485,7 +485,7 @@
           this.staffID = localStorage.getItem('staffID');
           staffInd = this.findId(this.staffID, this.dataArr);
 
-          fetch('http://localhost:5001/application')
+          fetch('https://spm-project-g9-t3-aql6.vercel.app/application')
             .then(response => response.json())
             .then(returnedJSON => {
               this.ApplicationArr = returnedJSON.data;
@@ -598,7 +598,7 @@
             }
             console.log(item)
             console.log(item.Staff_ID, item.Date_Applied, item.Time_Of_Day)
-            const response = await axios.post('http://localhost:5001/approveApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/approveApplication', {
               Staff_ID: item.Staff_ID,
               Date_Applied: item.Date_Applied,
               Time_Of_Day: item.Time_Of_Day,
@@ -637,7 +637,7 @@
         async submitRejection() {
           // Logic for submitting rejection reason -> this one will manage the rejection of pending requests, prolly is sql here also?
           try {
-            const response = await axios.post('http://localhost:5001/rejectApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/rejectApplication', {
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
@@ -669,7 +669,7 @@
         },
 
         findstaffid(item) {
-          fetch('http://localhost:5001/employee')
+          fetch('https://spm-project-g9-t3-aql6.vercel.app/employee')
             .then(response => response.json())
             .then(returnedJSON => {
               dataArr = returnedJSON.data;
@@ -700,7 +700,7 @@
         async withdrawPendingApplication(item) {
           console.log(item)
           try {
-            const response = await axios.post('http://localhost:5001/withdrawPendingApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/withdrawPendingApplication', {
               Staff_ID: item.Staff_ID,
               Date_Applied: item.Date_Applied,
               Time_Of_Day: item.Time_Of_Day,
@@ -734,7 +734,7 @@
           }
 
           try {
-            const response = await axios.post('http://localhost:5001/withdrawApprovedApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/withdrawApprovedApplication', {
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
@@ -769,7 +769,7 @@
           }
 
           try {
-            const response = await axios.post('http://localhost:5001/pendingwithdrawApprovedApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/pendingwithdrawApprovedApplication', {
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
@@ -805,7 +805,7 @@
 
           try {
             console.log(this.selectedItem)
-            const response = await axios.post('http://localhost:5001/RejectPendingWithdrawApprovedApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/RejectPendingWithdrawApprovedApplication', {
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
@@ -844,7 +844,7 @@
         async ApprovePendingSubmitWithdrawal(item) {
           try {
             console.log(item)
-            const response = await axios.post('http://localhost:5001/ApprovePendingWithdrawApprovedApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/ApprovePendingWithdrawApprovedApplication', {
               Staff_ID: item.Staff_ID,
               Date_Applied: item.Date_Applied,
               Time_Of_Day: item.Time_Of_Day,
@@ -932,7 +932,7 @@
         },
         async submitChange() {
           try {
-            const response = await axios.post('http://localhost:5001/changeApplication', {
+            const response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/changeApplication', {
               Staff_ID: this.selectedItem.Staff_ID,
               Date_Applied: this.selectedItem.Date_Applied,
               Time_Of_Day: this.selectedItem.Time_Of_Day,
