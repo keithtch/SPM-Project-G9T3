@@ -5,5 +5,10 @@
     ],
     "routes": [
       { "src": "/(.*)", "dest": "api/application.py" }
-    ]
+    ],
+    "git": {
+      "deploymentEnabled": {
+        "main": false
+      }
+    }
 }
