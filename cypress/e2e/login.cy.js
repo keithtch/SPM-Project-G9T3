@@ -6,7 +6,7 @@ describe('All-In-One WFHMS Login Page', () => {
             },
         }).as('getEmployee');
 
-        cy.visit('http://localhost:8000/Login&Authentication/login.html'); // Adjust the URL 
+        cy.visit('http://localhost:8000/login.html'); // Adjust the URL 
     });
 
     it('Displays initial elements correctly', () => {
