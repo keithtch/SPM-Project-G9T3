@@ -387,6 +387,7 @@ def approveApplication():
             print(staff_id,date_applied,time_of_day)
             cursor.execute(select_query, (staff_id, date_applied, time_of_day))
             application = cursor.fetchone()
+            print(application)
             if not application:
                 return jsonify({"status": "error", "message": "Application not found"}), 404 #Return error if application not found
             
@@ -416,6 +417,11 @@ def approveApplication():
                     VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
                     """
                     cursor.execute(query, (application[0],date,application[2],application[3],'Approved',application[5],date,date))
+                    
+                    log_query="""
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(log_query, (application[0], date, application[2], application[3], 'Approved', application[5],date,date))
                 connection.commit()
             else:
                 query = """
@@ -425,6 +431,15 @@ def approveApplication():
                 """
                 cursor.execute(query, (staff_id, date_applied, time_of_day))
                 connection.commit()
+                
+
+                log_query="""
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                cursor.execute(log_query, (staff_id, date_applied, time_of_day, application[3], 'Approved', application[5],application[8],application[9]))
+                connection.commit()
+                
+                
             
            
             # Retrieve the employee's email address
@@ -500,6 +515,12 @@ def rejectApplication():
                 """
                 cursor.execute(query, (rejection_reason,recurring_id))
                 connection.commit()
+                
+                log_query="""
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Start_Date, End_Date, Recurring_ID,Recurring_Day) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s,%s,%s)
+                    """
+                cursor.execute(log_query, (staff_id, date_applied, time_of_day, application[3], 'Rejected', application[5], rejection_reason, application[8],application[9], application[10],application[11]))
+                connection.commit()
             else:
                 query = """
                     UPDATE Application
@@ -507,6 +528,12 @@ def rejectApplication():
                     WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
                 """
                 cursor.execute(query, (rejection_reason, staff_id, date_applied, time_of_day))
+                connection.commit()
+                
+                log_query="""
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                cursor.execute(log_query, (staff_id, date_applied, time_of_day, application[3], 'Rejected', application[5], rejection_reason, application[8],application[9]))
                 connection.commit()
             
              # Retrieve the employee's email address
