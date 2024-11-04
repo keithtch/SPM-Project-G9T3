@@ -103,7 +103,7 @@ def test_approveApplication(client, mocker):
     mock_cursor.execute = mocker.Mock()
     # Adjust the return value to match the expected structure
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
         ['test@example.com']  # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
@@ -139,7 +139,7 @@ def test_approveApplication_with_recurring_id(client, mocker):
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
         ['test@example.com']  # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
@@ -175,7 +175,7 @@ def test_approveApplication_without_recurring_id(client, mocker):
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', None],  # Application data
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
         ['test@example.com']  # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
@@ -274,7 +274,7 @@ def test_approveApplication_with_email_error(client, mocker):
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
         ['test@example.com']  # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
@@ -310,8 +310,8 @@ def test_approveApplication_with_no_email(client, mocker):
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
-        None  # No email found
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
+        None # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
     mock_connection.commit = mocker.Mock()
@@ -347,7 +347,7 @@ def test_rejectApplication(client, mocker):
     mock_cursor.__exit__ = mocker.Mock(return_value=False)
     mock_cursor.execute = mocker.Mock()
     mock_cursor.fetchone = mocker.Mock(side_effect=[
-        [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+        [1, '2023-01-01', 'AM', 1, 'Pending', 'Reason', 'Manager_Reason', 'Staff_Withdrawal_Reason', '2023-01-01', '2023-01-01', 'recurring_id', 'Monday'],  # Application data
         ['test@example.com']  # Employee email
     ])
     mock_connection.cursor.return_value = mock_cursor
@@ -475,3 +475,36 @@ def test_database_connection_issue(client, mocker):
     assert response.status_code == 500
     assert response.json['status'] == 'error'
     assert 'Database connection failed' in response.json['message']
+    def test_rejectApplication(client, mocker):
+        # Mock the database connection and cursor
+        mock_connection = mocker.Mock()
+        mock_cursor = mocker.Mock()
+        mock_cursor.__enter__ = mocker.Mock(return_value=mock_cursor)
+        mock_cursor.__exit__ = mocker.Mock(return_value=False)
+        mock_cursor.execute = mocker.Mock()
+        mock_cursor.fetchone = mocker.Mock(side_effect=[
+            [1, '2023-01-01', 'AM', 'Manager', 'Pending', 'Reason', '2023-01-01', '2023-01-01', 'recurring', 'Monday', 1],  # Application data
+            ['test@example.com']  # Employee email
+        ])
+        mock_connection.cursor.return_value = mock_cursor
+        mock_connection.commit = mocker.Mock()
+        mocker.patch('application.get_db_connection', return_value=mock_connection)
+
+        # Mock the email sending part
+        mock_smtp = mocker.patch('smtplib.SMTP_SSL', autospec=True)
+        mock_smtp_instance = mock_smtp.return_value.__enter__.return_value
+        mock_smtp_instance.sendmail = mocker.Mock()
+
+        data = {
+            'Staff_ID': 1,
+            'Date_Applied': '2023-01-01',
+            'Time_Of_Day': 'AM',
+            'Rejection_Reason': 'Reason'
+        }
+        response = client.post('/rejectApplication', json=data)
+
+        assert response.status_code == 200
+        assert response.json['status'] == 'success'
+        mock_cursor.execute.assert_called()
+        mock_connection.commit.assert_called()
+        mock_smtp_instance.sendmail.assert_called()
