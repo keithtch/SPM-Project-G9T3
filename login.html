@@ -56,7 +56,7 @@
                     this.fetchData().then(() => {
                         if (this.checkId(this.staffID)) {
                             localStorage.setItem('staffID', this.staffID);
-                            window.location.href = window.location.origin + '/Home/home.html' //Use Full URL; 
+                            window.location.href = window.location.origin + window.location.pathname.replace('/login.html', '/Home/home.html'); 
                         } else {
                             this.isLoading = false; 
                             alert('Invalid StaffID. Please try again.');
