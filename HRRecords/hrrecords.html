@@ -13,6 +13,7 @@
         }
         .text-wrap {
             white-space: pre-wrap;
+            word-break: break-word;
         }
         th {
             background-color: #f8f9fa;
@@ -20,6 +21,29 @@
         }
         td {
             vertical-align: middle;
+        }
+        .bg-rejected {
+            background-color: #ffcdd2;
+        }
+        .bg-withdrawn {
+            background-color: #fff3cd;
+        }
+        .bg-pending-withdrawal {
+            background-color: #d1ecf1;
+        }
+        .bg-approved {
+            background-color: #d4edda;
+        }
+        .bg-unknown {
+            background-color: #a3b9bd
+        }
+        @media (max-width: 767px) {
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
         }
     </style>
 </head>
@@ -31,8 +55,8 @@
                 Go Back to Home Page
             </button>
         </div>
-        <div class="table-container">
-            <table class="table table-bordered table-striped">
+        <div class="table-responsive table-container">
+            <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Database Record ID</th>
@@ -47,7 +71,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="record in hrRecords" :key="record.id">
+                    <tr v-for="record in hrRecords" :key="record.id" :class="getRowClass(record.status)">
                         <td>{{ record.id }}</td>
                         <td>{{ record.staffId }}</td>
                         <td>{{ record.wfhDate }}</td>
@@ -70,16 +94,13 @@
             data: {
                 hrRecords: []
             },
-            mounted(){
+            mounted() {
                 fetch('https://spm-project-g9-t3-aql6.vercel.app/getLogs')
-                    .then(response => response.json()) 
+                    .then(response => response.json())
                     .then((returnedJSON) => {
-                        //console.log(returnedJSON);
                         this.hrRecords = returnedJSON.data;
-                        // console.log(this.hrRecords);
                         let converted_data = [];
                         this.hrRecords.forEach(record => {
-                            // console.log(record); 
                             converted_data.push({
                                 "id": record[0],
                                 "staffId": record[1],
@@ -92,18 +113,32 @@
                                 "staffWithdrawReason": record[8]
                             });
                         });
-
-                        //console.log(converted_data);
                         this.hrRecords = converted_data;
                     })
                     .catch(error => {
                         console.error('Error fetching HR records:', error);
                     });
-
             },
             methods: {
                 goBack() {
                     window.location.href = "../Home/home.html";
+                },
+                getRowClass(status) {
+                    const formattedStatus = status.toLowerCase(); 
+                    switch (formattedStatus) {
+                        case 'rejected':
+                            return 'bg-rejected';
+                        case 'withdrawn':
+                            return 'bg-withdrawn';
+                        case 'pending_withdrawal':
+                            return 'bg-pending-withdrawal';
+                        case 'pending':
+                            return 'bg-pending-withdrawal';
+                        case 'approved':
+                            return 'bg-approved';
+                        default:
+                            return 'bg-unknown';
+                    }
                 }
             }
         });
