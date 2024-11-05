@@ -98,23 +98,6 @@ jobs:
           path: cypress/screenshots/**
         if: failure()  # Only upload if Cypress tests fail
 
-  notify:
-    needs: [test, pytest, e2e]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Check Test Status
-        id: check
-        run: |
-          if [[ "${{ needs.test.result }}" == "success" && 
-                "${{ needs.pytest.result }}" == "success" && 
-                "${{ needs.e2e.result }}" == "success" ]]; then
-            echo "All tests passed!"
-            exit 0
-          else
-            echo "Some tests failed!"
-            exit 1
-          fi
 
   deploy:
     runs-on: ubuntu-latest
