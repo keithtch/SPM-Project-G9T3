@@ -415,20 +415,20 @@ def approveApplication():
                 print(dates)
                 for date in dates:
                     query = """
-                        INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+                        INSERT INTO Application (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Start_Date, End_Date)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
                     """
-                    cursor.execute(query, (application[0],date,application[2],application[3],'Approved',application[5],date,date))
+                    cursor.execute(query, (application[0],date,application[2],application[3],'Approved',application[5],'No Issue',date,date))
                     
                     log_query="""
-                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s)
                     """
-                    cursor.execute(log_query, (application[0], date, application[2], application[3], 'Approved', application[5],date,date))
+                    cursor.execute(log_query, (application[0], date, application[2], application[3], 'Approved', application[5],'No Issue',date,date))
                 connection.commit()
             else:
                 query = """
                     UPDATE Application
-                    SET Status_Of_Application = 'Approved'
+                    SET Status_Of_Application = 'Approved' , Manager_Reason = 'No Issue'
                     WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s
                 """
                 cursor.execute(query, (staff_id, date_applied, time_of_day))
@@ -436,9 +436,9 @@ def approveApplication():
                 
 
                 log_query="""
-                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Start_Date, End_Date) VALUES (%s, %s, %s, %s, %s, %s, %s, %s,%s)
                     """
-                cursor.execute(log_query, (staff_id, date_applied, time_of_day, application[3], 'Approved', application[5],application[8],application[9]))
+                cursor.execute(log_query, (staff_id, date_applied, time_of_day, application[3], 'Approved', application[5], 'No Issue' ,application[8],application[9]))
                 connection.commit()
                 
                 
