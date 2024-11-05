@@ -203,8 +203,10 @@ def updateDates():
                     connection.commit()
                     print('application success logged')
                 else:
-                    if entry[2] == 'AM' or entry[2] == 'PM':
-                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND Time_Of_Day = 'Full Day'"""
+                    if entry[2] == 'AM':
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND (Time_Of_Day = 'Full Day' OR Time_Of_Day = 'AM')"""
+                    elif entry[2] == 'PM':
+                        check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND (Time_Of_Day = 'Full Day' OR Time_Of_Day = 'PM')"""
                     else:
                         check_query = """SELECT * FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND (Status_Of_Application = 'Approved' OR Status_Of_Application = 'Pending') AND (Time_Of_Day = 'AM' OR Time_Of_Day = 'PM')"""
 
