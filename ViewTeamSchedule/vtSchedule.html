@@ -388,6 +388,7 @@
             this.viewType = type;
             if (type === 'weekly') {
               this.fetchWeeklySchedule();
+              console.log(this.weeklySchedule)
             }
           },
 
@@ -514,8 +515,11 @@
               try {
                 var idArr = [];
                 var tempEmp = {};
+                var deleteList = {}
+                console.log(currData[selected])
                 for (let employee of currData[selected]) {
                   if (employee[0] != parseInt(this.staffID)) {
+                    console.log(employee[0])
                     idArr.push(employee[0]);
                     tempEmp[employee[0]] = {
                       role: employee[4],
@@ -531,21 +535,31 @@
                   status: "Approved",
                 });
                 const applications = apps.data.results;
+                for(var emp in tempEmp){
+                  console.log(emp)
+                }
                 console.log(applications)
                 if (applications) {
                   for (var app of applications) {
                     this.totalWFH++;
                     if (app[2] == "AM") {
+                      console.log(tempEmp[app[0]])
                       this.schedule.wfh.AM.push(tempEmp[app[0]]);
                       this.schedule.office.PM.push(tempEmp[app[0]]);
-                      delete tempEmp[app[0]];
+                      deleteList[app[0]] = 1
                     } else if (app[2] == "PM") {
+                      console.log(tempEmp[app[0]])
                       this.schedule.wfh.PM.push(tempEmp[app[0]]);
                       this.schedule.office.AM.push(tempEmp[app[0]]);
-                      delete tempEmp[app[0]];
+                      deleteList[app[0]] = 1
                     }
                   }
+
+                  for (var emp in deleteList) {
+                    delete tempEmp[emp]
+                  }
                 }
+                console.log(this.schedule)
                 for (let key in tempEmp) {
                   this.schedule.office.fullDay.push(tempEmp[key]);
                 }
@@ -607,7 +621,7 @@
           },
         },
 
-        watch: {   // @!!!ZIMING
+        watch: {   // @!!!ZIMING  
           selectedDate() {
             if (this.viewType === 'weekly') {
               this.fetchWeeklySchedule();
