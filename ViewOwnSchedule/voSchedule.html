@@ -182,17 +182,91 @@
         },
 
         updateCalendarEvents() {
-          $('#calendar').fullCalendar('removeEvents'); // Remove existing events
+          const self = this;
+          $('#calendar').fullCalendar('removeEvents');
           $('#calendar').fullCalendar('addEventSource', {
-            events: this.AScheduleArr, // Approved Applications
-            color: '#28a745',
+            events: this.AScheduleArr,
+            color: '#28a745'
           });
 
           $('#calendar').fullCalendar('addEventSource', {
-            events: this.PScheduleArr, // Pending Applications
-            color: '#ffc107',
+            events: this.PScheduleArr,
+            color: '#ffc107'
           });
-          $('#calendar').fullCalendar('rerenderEvents'); // Re-render the events
+
+          // Add event handlers for both hover and click
+          $('#calendar').fullCalendar('option', {
+            eventMouseover: function(event, jsEvent) {
+              self.showEventDetails(event, jsEvent);
+            },
+            eventMouseout: function() {
+              if (window.innerWidth > 768) {
+                self.hideEventDetails();
+              }
+            },
+            eventClick: function(event, jsEvent) {
+              const detailBox = $('#detailBox');
+              if (detailBox.is(':visible')) {
+                self.hideEventDetails();
+              } else {
+                self.showEventDetails(event, jsEvent);
+              }
+            }
+          });
+
+          $('#calendar').fullCalendar('rerenderEvents');
+        },
+
+        showEventDetails(event, jsEvent) {
+          const detailBox = $('#detailBox');
+          const eventDetails = `
+            <div class="event-details">
+              <h4>${event.title}</h4>
+              <p><strong>Status:</strong> ${event.status}</p>
+              <p><strong>Shift:</strong> ${event.shift}</p>
+              <p><strong>Description:</strong> ${event.description}</p>
+              <p><strong>Location:</strong> ${event.location}</p>
+              <p><strong>Reason:</strong> ${event.reason}</p>
+            </div>
+          `;
+
+          detailBox.html(eventDetails);
+          
+          const isMobile = window.innerWidth <= 768;
+          if (isMobile) {
+            detailBox.css({
+              display: 'block',
+              position: 'fixed',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              background: 'white',
+              padding: '15px',
+              borderTop: '2px solid #ccc',
+              zIndex: 1000,
+              maxHeight: '50vh',
+              overflowY: 'auto'
+            });
+          } else {
+            const x = jsEvent.pageX + 10;
+            const y = jsEvent.pageY + 10;
+            detailBox.css({
+              display: 'block',
+              position: 'absolute',
+              top: y,
+              left: x,
+              background: 'white',
+              padding: '10px',
+              border: '1px solid #ccc',
+              borderRadius: '4px',
+              zIndex: 1000,
+              maxWidth: '300px'
+            });
+          }
+        },
+
+        hideEventDetails() {
+          $('#detailBox').hide();
         },
 
         apply() {

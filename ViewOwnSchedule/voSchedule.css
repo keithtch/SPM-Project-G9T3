@@ -42,3 +42,34 @@ body {
   display: flex;
   justify-content: center;
 }
+
+#detailBox {
+  display: none;
+  background: white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.event-details {
+  font-size: 14px;
+}
+
+.event-details h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.event-details p {
+  margin: 5px 0;
+}
+
+@media (max-width: 768px) {
+  #detailBox {
+    width: 100%;
+    border-radius: 12px 12px 0 0;
+  }
+  
+  .event-details {
+    padding: 5px;
+  }
+}
