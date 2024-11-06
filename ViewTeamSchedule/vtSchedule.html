@@ -515,7 +515,7 @@
               try {
                 var idArr = [];
                 var tempEmp = {};
-                var deleteList = {}
+                var seenList = {}
                 console.log(currData[selected])
                 for (let employee of currData[selected]) {
                   if (employee[0] != parseInt(this.staffID)) {
@@ -534,9 +534,21 @@
                   date: this.selectedDate,
                   status: "Approved",
                 });
-                const applications = apps.data.results;
-                for(var emp in tempEmp){
-                  console.log(emp)
+                const temp_apps = apps.data.results;
+                var applications = []
+                if (temp_apps) {
+                  for (var temp of temp_apps) {
+                    console.log(temp)
+                    if (!(temp[0] in seenList)) {
+                      seenList[temp[0]] = temp
+                    } else {
+                      seenList[temp[0]][2] = 'Full Day'
+                    }
+                  }
+                }
+                for (var id in seenList) {
+                  console.log(id)
+                  applications.push(seenList[id])
                 }
                 console.log(applications)
                 if (applications) {
@@ -546,18 +558,18 @@
                       console.log(tempEmp[app[0]])
                       this.schedule.wfh.AM.push(tempEmp[app[0]]);
                       this.schedule.office.PM.push(tempEmp[app[0]]);
-                      deleteList[app[0]] = 1
+                      delete tempEmp[app[0]];
                     } else if (app[2] == "PM") {
                       console.log(tempEmp[app[0]])
                       this.schedule.wfh.PM.push(tempEmp[app[0]]);
                       this.schedule.office.AM.push(tempEmp[app[0]]);
-                      deleteList[app[0]] = 1
+                      delete tempEmp[app[0]];
+                    } else {
+                      this.schedule.wfh.fullDay.push(tempEmp[app[0]])
                     }
                   }
 
-                  for (var emp in deleteList) {
-                    delete tempEmp[emp]
-                  }
+
                 }
                 console.log(this.schedule)
                 for (let key in tempEmp) {
