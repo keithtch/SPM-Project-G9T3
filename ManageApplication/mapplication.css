@@ -77,3 +77,15 @@ body {
   .form-group {
     margin-bottom: 1.5rem;
   }
+
+  .b-form-datepicker {
+    touch-action: manipulation;
+  }
+  
+  .b-form-datepicker >>> .form-control {
+    -webkit-overflow-scrolling: touch;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  
