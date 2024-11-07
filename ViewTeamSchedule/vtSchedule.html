@@ -62,7 +62,7 @@
             </select>
           </div>
           <!-- Switcher Button to toggle between Team and Department -->
-          <button class="btn btn-secondary ml-3" @click="toggleScheduleView">
+          <button v-if="userRole === 1 || department=== 'HR'" class="btn btn-secondary ml-3" @click="toggleScheduleView">
             Filter by {{ deptFlag ? 'Team' : 'Department' }}
           </button>
         </div>
@@ -336,6 +336,8 @@
         el: "#app",
         data: {
           staffID: localStorage.getItem("staffID"),
+          department: '',
+          userRole: '',
           currEmployee: [],
           teams: {},
           selectedTeam: "",
@@ -386,10 +388,10 @@
           },
           switchView(type) {  // @ZIMING
             this.viewType = type;
-            if (type === 'weekly') {
-              this.fetchWeeklySchedule();
-              console.log(this.weeklySchedule)
-            }
+            // if (type === 'weekly') {
+            //   this.fetchWeeklySchedule();
+            //   console.log(this.weeklySchedule)
+            // }
           },
 
           async fetchWeeklySchedule() {    // @ZIMING I CHATGPT-ED this, because i don't know how to fill this backend up
@@ -410,15 +412,19 @@
               
               try {
                 if (this.deptFlag) {
+                  this.filter = "Department";
                   var currData = this.deptData;
                   var selected = this.selectedDept;
                 } else {
+                  this.filter = "Team";
                   var currData = this.teamData;
                   var selected = this.selectedTeam;
                 }
-
+                this.totalMembers = currData[selected].length;
+                this.currSelected = selected;
                 var idArr = [];
                 var tempEmp = {};
+                var seenList = {};
                 for (let employee of currData[selected]) {
                   if (employee[0] != parseInt(this.staffID)) {
                     idArr.push(employee[0]);
@@ -448,7 +454,23 @@
                   },
                 };
 
-                const applications = apps.data.results;
+                const temp_apps = apps.data.results;
+                var applications = []
+
+                if (temp_apps) {
+                  for (var temp of temp_apps) {
+                    console.log(temp)
+                    if (!(temp[0] in seenList)) {
+                      seenList[temp[0]] = temp
+                    } else {
+                      seenList[temp[0]][2] = 'Full Day'
+                    }
+                  }
+                }
+                for (var id in seenList) {
+                  console.log(id)
+                  applications.push(seenList[id])
+                }
                 if (applications) {
                   for (var app of applications) {
                     if (app[2] == "AM") {
@@ -459,6 +481,9 @@
                       dailySchedule.wfh.PM.push(tempEmp[app[0]]);
                       dailySchedule.office.AM.push(tempEmp[app[0]]);
                       delete tempEmp[app[0]];
+                    } else {
+                      dailySchedule.wfh.fullDay.push(tempEmp[app[0]])
+                      delete tempEmp[app[0]];
                     }
                   }
                 }
@@ -466,7 +491,7 @@
                 for (let key in tempEmp) {
                   dailySchedule.office.fullDay.push(tempEmp[key]);
                 }
-
+                this.setStatus();
                 this.weeklySchedule[formattedDate] = dailySchedule;
               } catch (error) {
                 console.error(`Failed to load schedule for ${formattedDate}`, error);
@@ -515,7 +540,7 @@
               try {
                 var idArr = [];
                 var tempEmp = {};
-                var seenList = {}
+                var seenList = {};
                 console.log(currData[selected])
                 for (let employee of currData[selected]) {
                   if (employee[0] != parseInt(this.staffID)) {
@@ -566,6 +591,7 @@
                       delete tempEmp[app[0]];
                     } else {
                       this.schedule.wfh.fullDay.push(tempEmp[app[0]])
+                      delete tempEmp[app[0]];
                     }
                   }
 
@@ -631,7 +657,16 @@
             this.maxDate = maxDate;
             console.log(this.minDate, this.maxDate);
           },
+          findId(id, arr) {
+            for (let i = 0; i < arr.length; i++) {
+              if (id == arr[i][0]) {
+                return i;
+              }
+            }
+            return 0;
+          },
         },
+
 
         watch: {   // @!!!ZIMING  
           selectedDate() {
@@ -644,7 +679,21 @@
         async mounted() {
           this.setDateLimits();
           this.updateInfo();
+          fetch("https://spm-project-g9-t3-aql6.vercel.app/employee")
+            .then((response) => response.json())
+            .then((returnedJSON) => {
+              var dataArr = returnedJSON.data;
+              var staffInd = this.findId(this.staffID, dataArr);
+              this.department = dataArr[staffInd][3];
+              this.userRole = dataArr[staffInd][8];
+              console.log(this.userRole);
+              console.log(this.department);
 
+            })
+            .catch((error) => {
+              console.error("Error fetching data:", error);
+              this.isLoading = false;
+            });
           const team = await axios.post(
             "https://spm-project-g9-t3-aql6.vercel.app/findTeam/" + this.staffID
           );
