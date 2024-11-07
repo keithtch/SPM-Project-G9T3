@@ -9,7 +9,7 @@ describe('View Team Schedule Page', () => {
 
       // Visit the page before each test
       cy.visit('http://localhost:8000/ViewTeamSchedule/vtSchedule.html');
-      localStorage.setItem("staffID", "140894");
+      localStorage.setItem("staffID", "160008");
     });
   
     it('should load the page and display the title correctly', () => {
