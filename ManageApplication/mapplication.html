@@ -232,7 +232,8 @@
             </div>
             <div class="modal-footer">
               <b-button variant="secondary" @click="closeRejectionModal">Close</b-button>
-              <b-button variant="primary" @click="submitRejection">Submit</b-button>
+              <b-button v-if="activeTab === 'pending'" variant="primary" @click="submitRejection">Submit</b-button>
+              <b-button v-if="activeTab === 'pending_withdrawal'"variant="primary" @click="RejectPendingSubmitWithdrawal">Submit</b-button>
             </div>
           </div>
         </div>
