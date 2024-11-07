@@ -275,7 +275,7 @@ def getTeamApplications():
         with connection.cursor() as cursor:
             # SQL Query: Join Employee and Application tables to get subordinates' applications
             query = """
-                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason, a.Start_Date, a.End_Date, a.Recurring_ID, a.recurring_day, a.manager_reason
+                SELECT a.Staff_ID, a.Date_Applied, a.Time_Of_Day, a.Status_Of_Application, a.Reason, a.Start_Date, a.End_Date, a.Recurring_ID, a.recurring_day, a.manager_reason, a.Staff_Withdrawal_Reason
                 FROM Employee e
                 JOIN Application a ON e.Staff_ID = a.Staff_ID
                 WHERE e.Reporting_Manager = %s  -- Using reporting_manager_id
@@ -715,11 +715,11 @@ def RejectedPendingWithdrawApprovedApplication():
             if application:
                 # Update the status of the application to Pending_Withdrawal
                 update_query = """
-                    UPDATE Application SET Status_Of_Application = 'Approved'
+                    UPDATE Application SET Status_Of_Application = 'Approved', Manager_Reason = %s
                     WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
                 """
                 print(staff_id,date_applied,time_of_day)
-                cursor.execute(update_query, (staff_id, date_applied, time_of_day))
+                cursor.execute(update_query, (manager_withdraw_reason,staff_id, date_applied, time_of_day))
 
                 # Insert into Staff_Application_Logs
                 log_query = """
@@ -732,10 +732,11 @@ def RejectedPendingWithdrawApprovedApplication():
                     application[1],  # Date_Applied
                     application[2],  # Time_Of_Day
                     application[3],  # Reporting_Manager
-                    'Pending_Withdrawal',     # Status_Of_Application
+                    'Approved',     # Status_Of_Application
                     application[5],  # Reason
-                    application[6],  # Manager_Reason
-                    manager_withdraw_reason # manager approve withdraw reason
+                    manager_withdraw_reason,
+                    application[7],  # Manager_Reason
+                     # manager approve withdraw reason
                 ))
 
                 connection.commit()

@@ -169,7 +169,7 @@
       <b-card v-if="activeTab === 'pending_withdrawal' && isManagerView" class="card mb-4">
         <b-card-header class="bg-danger text-white">Team Pending Withdrawal Applications</b-card-header>
         <b-card-body>
-          <b-table :items="teamApplications['Pending_Withdrawal']" :fields="fieldsr" responsive="sm">
+          <b-table :items="teamApplications['Pending_Withdrawal']" :fields="fieldspw" responsive="sm">
             <template v-slot:cell(Decision)="data">
               <b-button variant="success" @click="ApprovePendingSubmitWithdrawal(data.item)">Approve</b-button>
               <b-button variant="danger" @click="openRejectionModal(data.item)">Reject</b-button>
@@ -324,6 +324,15 @@
           { key: "Reason", label: "Reason" },
           { key: "Decision", label: "Decision" },
         ],
+        fieldspw: [
+          { key: "Staff_ID", label: "Staff ID" },
+          { key: "Staff_Name", label: "Staff Name" },
+          { key: "Date_Applied", label: "Date Applied" },
+          { key: "Time_Of_Day", label: "Time of Day" },
+          { key: "Status_Of_Application", label: "Status" },
+          { key: "Withdraw_Reason", label: "Withdraw Reason" },
+          { key: "Decision", label: "Decision" },
+        ],
         pendingFields: [
           { key: "Staff_ID", label: "Staff ID" },
           { key: "Staff_Name", label: "Staff Name" },
@@ -419,7 +428,7 @@
         },
         async getTeamApplications() {
           try {
-            var response = await axios.post('https://spm-project-g9-t3-aql6.vercel.app/getTeamApplications', {
+            var response = await axios.post('http://localhost:5001/getTeamApplications', {
               staffID: this.staffID  // send staffID in the request body as JSON
             });
 
@@ -453,6 +462,7 @@
                   Time_Of_Day: entry[2],
                   Status_Of_Application: entry[3],
                   Reason: entry[4],
+                  Withdraw_Reason: entry[10],
                   Decision: entry[9]
                 })
                 if (entry[3] == 'Approved') {
@@ -831,7 +841,7 @@
                   Decision: this.rejectionReason, // Set the rejection reason
                 });
 
-              alert('Application withdrawn rejected.');
+              alert('Withdrawn application rejected.');
               this.closeRejectionModal();
             } else {
               alert('Failed to reject the application.');
