@@ -706,7 +706,7 @@ def RejectedPendingWithdrawApprovedApplication():
         with connection.cursor() as cursor:
             # Retrieve application details before deleting
             select_query = """
-                SELECT Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
+                SELECT Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager, Status_Of_Application, Reason, Manager_Reason, Staff_Withdrawal_Reason FROM Application WHERE Staff_ID = %s AND Date_Applied = %s AND Time_Of_Day = %s AND Status_Of_Application = 'Pending_Withdrawal'
             """
             print(staff_id,date_applied,time_of_day)
             cursor.execute(select_query, (staff_id, date_applied, time_of_day))
@@ -720,7 +720,6 @@ def RejectedPendingWithdrawApprovedApplication():
                 """
                 print(staff_id,date_applied,time_of_day)
                 cursor.execute(update_query, (manager_withdraw_reason,staff_id, date_applied, time_of_day))
-
                 # Insert into Staff_Application_Logs
                 log_query = """
                     INSERT INTO Staff_Application_Logs (Staff_ID, Date_Applied, Time_Of_Day, Reporting_Manager,
@@ -738,7 +737,6 @@ def RejectedPendingWithdrawApprovedApplication():
                     application[7],  # Manager_Reason
                      # manager approve withdraw reason
                 ))
-
                 connection.commit()
                 # Insert code for email notification
                  # Retrieve the manager's email address
